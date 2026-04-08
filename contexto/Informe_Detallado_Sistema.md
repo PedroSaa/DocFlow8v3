@@ -77,7 +77,7 @@ El sistema utiliza una estrategia de **Database per Tenant**, donde cada organiz
 │  └─────────────┘    └─────────────┘    └─────────────┘   │
 │          │                  │                               │
 │          └──────────────────┴───────────────────────────────│
-│                        NGINX / IIS                         │
+│                        NGINX / NETSTART                        │
 │                   (Reverse Proxy + SSL)                    │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -91,9 +91,13 @@ El sistema utiliza una estrategia de **Database per Tenant**, donde cada organiz
 | Módulo | Descripción | Estado |
 |--------|-------------|--------|
 | Dashboard | KPIs, gráficos, accesos rápidos | Demo |
-| Bandeja de Entrada | Documentos recibidos, derivados | Demo |
+| Bandeja de Entrada | Documentos recibidos, derivados. Incluye sub-bandejas: | Demo |
+| Bandeja de email | Bandeja de email/leer documentos | Demo |
+| Bandeja DocDigital del Gob | Documentos DocDigital del Gobierno | Demo |
+| Bandeja de Facturas | Bandeja de facturas recibidas | Demo |
+| Bandeja de Órdenes de Compra | Bandeja de órdenes de compra | Demo |
 | Expedientes | Gestión de carpetas de documentos | Demo |
-| Documentos | CRUD completo de documentos | Demo |
+| Registro de Documentos | CRUD completo de documentos | Demo |
 | Tareas | Gestión de tareas asignadas | Demo |
 | Consultas | Búsqueda avanzada de docs/tareas | Demo |
 | Reportes | Gráficos y estadísticas | Demo |
@@ -122,7 +126,7 @@ Por defecto se incluyen:
 | Despacho | CIRCULAN | ✅ | ✅ |
 | Circular | CIRCULAN | ✅ | ✅ |
 | Resolución | SALEN | ✅ | ✅ |
-| Recibido | LLEGAN | ❌ | ❌ |
+
 
 > **Nota**: Los tipos de documentos son 100% configurables. Cada organización puede crear, modificar o eliminar tipos según sus necesidades.
 
@@ -150,7 +154,7 @@ El sistema soporta múltiples métodos de autenticación, cada uno configurable 
 
 2. MFA (si está habilitado)
    ├── TOTP (código de 6 dígitos)
-   └── Código de respaldo
+   └── Código de respaldo autentificación 
 
 3. SELECCIÓN DE CARGO (si corresponde)
    └── Elegir con qué rol trabajar
@@ -164,7 +168,9 @@ Cada tenant puede configurar:
 - Timeout de sesión
 - Políticas de contraseña
 - SSO externo
-
+- Todas las configuraciones previas
+- Roles y permisos
+- crud: Correlativos, formatos de doc., Niveles o depto, subdepto, subrogante y permisos,  permiso de derivación
 ---
 
 ## 5. CARACTERÍSTICAS TÉCNICAS
