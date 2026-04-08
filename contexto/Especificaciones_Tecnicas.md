@@ -276,19 +276,25 @@ MFACodes
 | **Archivadores** | Gestión física de documentos | Completo |
 | **Administración** | Configuración del sistema | Completo |
 
-### 4.2 Tipos de Documentos
+### 4.2 Tipos de Documentos (Configurables por Organización)
 
-| Tipo | Categoría | Descripción | Envío |
-|------|-----------|-------------|-------|
-| **Ordinario** | Generado Externo | Documentos oficiales externos | Externo |
-| **Memo** | Generado Interno | Comunicación interna | Interno (nunca sale) |
-| **Oficio** | Generado Externo | Comunicaciones formales | Externo |
-| **Despacho** | Generado Interno | Comunicaciones desde Alcaldía | Interno (nunca sale) |
-| **Circular** | Generado Interno | Comunicados generales | Interno (nunca sale) |
-| **Resolución** | Generado Externo | Decisiones administrativas | Externo |
-| **Recibido** | Recibido Externo | Documentos externos recibidos | N/A (recibe) |
+Los siguientes tipos son **ejemplos por defecto** — cada organización puede crear, modificar o eliminar tipos según sus necesidades:
 
-#### Flujo de Tipos de Documento
+| Tipo | Categoría por Defecto | Descripción |
+|------|----------------------|-------------|
+| **Ordinario** | Generado Externo | Documentos oficiales externos |
+| **Memo** | Generado Interno | Comunicación interna |
+| **Oficio** | Generado Externo | Comunicaciones formales |
+| **Despacho** | Generado Interno | Comunicaciones desde Alcaldía |
+| **Circular** | Generado Interno | Comunicados generales |
+| **Resolución** | Generado Externo | Decisiones administrativas |
+| **Recibido** | Recibido Externo | Documentos externos recibidos |
+
+> **Nota**: Los tipos de documentos son **100% configurables**. Cada organización puede definir sus propios tipos y asociarlos a los flujos necesarios.
+
+#### Flujo de Documentos
+
+Todo documento puede seguir uno de estos 3 flujos:
 
 ```
                     ┌─────────────────────────┐
@@ -299,29 +305,51 @@ MFACodes
           │                     │                     │
           ▼                     ▼                     ▼
 ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│ RECIBIDO       │  │ GENERADO        │  │ GENERADO        │
-│ EXTERNO        │  │ INTERNO          │  │ EXTERNO         │
+│    LLEGAN       │  │   CIRCULAN     │  │     SALEN       │
+│   (Exterior →   │  │   (Interno →   │  │   (Interior →  │
+│    Interior)    │  │    Interno)    │  │    Exterior)   │
 │                 │  │                 │  │                 │
-│ - Partes        │  │ - Memo           │  │ - Oficio        │
-│ - Oficinas      │  │ - Despacho       │  │ - Resolución   │
-│   externas      │  │ - Circular       │  │ - Ordinario    │
-│ - Ciudadana     │  │ - Informe        │  │ - Carta        │
+│ - Recibido      │  │ - Memo          │  │ - Oficio        │
+│ - Partes        │  │ - Despacho      │  │ - Resolución   │
+│ - Externos      │  │ - Circular      │  │ - Ordinario    │
+│                 │  │ - Informe       │  │ - Carta        │
 │                 │  │                 │  │                 │
-│ [Entrada]       │  │ [Solo Interno]   │  │ [Salida]        │
+│ [llegan a la    │  │ [circulan solo  │  │ [se envían al  │
+│  organización]  │  │  dentro]        │  │   exterior]     │
 └─────────────────┘  └─────────────────┘  └─────────────────┘
 ```
 
-#### Detalle de Flujos
+#### Configuración de Tipos por Organización
 
-| Tipo Documento | Origen | Destino | Flujo |
-|----------------|--------|---------|-------|
-| **Recibido** | Exterior → Interior | Ciudadano/Oficina → Organización | Llega → Oficina Partes → Derivar |
-| **Memo** | Interno | Dept A → Dept B | Crear → Derivar (nunca sale) |
-| **Despacho** | Interno | Alcaldía → Depto | Crear → Derivar (nunca sale) |
-| **Circular** | Interno | Dirección → Todos | Crear → Distribuir (nunca sale) |
-| **Oficio** | Interno → Exterior | Organización → Exterior | Crear → Firmar → Enviar |
-| **Resolución** | Interno → Exterior | Organización → Exterior | Crear → Firmar → Publicar → Enviar |
-| **Ordinario** | Interno → Exterior | Organización → Exterior | Crear → Firmar → Enviar |
+Cada tenant puede configurar:
+
+| Configuración | Descripción |
+|---------------|-------------|
+| Nombre | Nombre del tipo |
+| Código | Código corto (ej: "MEM", "OFI") |
+| Categoría | LLEGAN / CIRCULAN / SALEN |
+| Requiere Firma | Si requiere firma digital |
+| Requiere Cite | Si requiere número de cite |
+| Plantilla | Plantilla asociada |
+| Estado Inicial | Estado cuando se crea |
+| Color | Color para标识 |
+
+```sql
+-- Tabla de configuración de tipos por tenant
+DocumentTypes
+├── Id (GUID, PK)
+├── TenantId (FK)
+├── Name (string)              -- "Memo"
+├── Code (string)              -- "MEM"
+├── Category (enum)            -- LLEGAN, CIRCULAN, SALEN
+├── RequiresSignature (bool)   -- false
+├── RequiresCite (bool)        -- true
+├── TemplateId (FK, nullable)
+├── InitialStatusId (FK)
+├── Color (string)             -- "#0369a1"
+├── IsActive (bool)
+└── SortOrder (int)
+```
 
 ### 4.3 Creación de Documentos
 

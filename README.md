@@ -22,13 +22,15 @@ Desarrollar la versión 3 del sistema DocFlow con tecnología moderna, configura
 | MFA/Doble Factor | TOTP (Google Authenticator, Authy) |
 | SSO Corporativo | SAML 2.0 / OIDC externo |
 
-### Tipos de Documentos (Flujo Completo)
+### Tipos de Documentos (Flujo Completo - Configurables)
 
-| Categoría | Tipos | Flujo |
-|-----------|-------|-------|
-| **Recibido Externo** | Documentos de afuera | Llega → Partes → Derivar |
-| **Generado Interno** | Memo, Despacho, Circular | Crear → Derivar (nunca sale) |
-| **Generado Externo** | Oficio, Resolución, Ordinario | Crear → Firmar → Enviar |
+| Categoría | Tipos por Defecto | Flujo |
+|-----------|-------------------|-------|
+| **Llegan** (desde afuera) | Recibido, Ordinario | Llega → Partes → Derivar |
+| **Circulan** (solo interno) | Memo, Despacho, Circular | Crear → Derivar (nunca sale) |
+| **Salen** (hacia afuera) | Oficio, Resolución, Ordinario | Crear → Firmar → Enviar |
+
+> **Nota**: Los tipos son 100% configurables — cada organización define sus propios tipos de documento
 
 ### Funcionalidades Principales
 - ✅ **OCR**: Extracción de texto de imágenes escaneadas

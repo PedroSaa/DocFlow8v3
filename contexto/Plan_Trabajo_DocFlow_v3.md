@@ -18,10 +18,12 @@ Desarrollar la versión 3 del sistema DocFlow (Sistema de Gestión Documental) c
 - ✅ MFA / Doble Factor (TOTP)
 - ✅ SSO Corporativo (SAML 2.0 / OIDC)
 
-### Tipos de Documentos (Flujo Completo)
-- **Recibido Externo**: Documentos que llegan desde afuera
-- **Generado Interno**: Documentos que nunca salen (Memo, Despacho, Circular)
-- **Generado Externo**: Documentos que se envían afuera (Oficio, Resolución, Ordinario)
+### Tipos de Documentos (Flujo Completo - Configurables)
+- **Recibido (Llegan)**: Documentos que llegan desde afuera
+- **Generado Interno (Circulan)**: Documentos que circulan internamente (Memo, Despacho, Circular) — nunca salen
+- **Generado Externo (Salen)**: Documentos que se envían afuera (Oficio, Resolución, Ordinario)
+
+> **Nota**: Los tipos son 100% configurables — cada organización define los tipos que necesite
 
 ### Funcionalidades Clave
 - ✅ OCR para imágenes escaneadas
