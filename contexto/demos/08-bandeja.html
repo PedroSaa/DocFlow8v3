@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocFlow v3 — Bandeja de Entrada</title>
+<style>
+  :root {
+    --primary: #1a56db;
+    --primary-light: #e8effc;
+    --primary-dark: #1240a8;
+    --primary-rgb: 26, 86, 219;
+    --success: #0d9f6e;
+    --warning: #e3a008;
+    --danger: #e02424;
+    --danger-light: #fef2f2;
+    --info: #3f83f8;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --sidebar-width: 260px;
+    --sidebar-collapsed: 72px;
+    --header-height: 64px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--gray-50); color: var(--gray-800);
+    font-size: 14px; line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .app-layout { display: flex; min-height: 100vh; }
+
+  /* ============================
+     SIDEBAR (DARK)
+     ============================ */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--gray-900);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    bottom: 0;
+    z-index: 100;
+    transition: width 0.25s ease;
+    overflow: hidden;
+  }
+  .sidebar.collapsed { width: var(--sidebar-collapsed); }
+  .sidebar.collapsed .sidebar-brand-text,
+  .sidebar.collapsed .nav-label,
+  .sidebar.collapsed .nav-badge,
+  .sidebar.collapsed .sidebar-footer-text { opacity: 0; width: 0; overflow: hidden; }
+  .sidebar.collapsed .nav-icon { margin: 0 auto; }
+
+  .sidebar-brand { height: var(--header-height); display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid rgba(255,255,255,0.08); gap: 12px; }
+  .sidebar-logo { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .sidebar-brand-text { font-size: 16px; font-weight: 700; white-space: nowrap; }
+  .sidebar-user { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; }
+  .sidebar-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
+  .sidebar-user-name { font-size: 13px; font-weight: 600; }
+  .sidebar-user-dept { font-size: 11px; color: var(--gray-400); }
+
+  .sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .sidebar-section { padding: 8px 12px; }
+  .sidebar-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-500); padding: 8px 8px 4px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--gray-300); text-decoration: none; border-radius: 8px; cursor: pointer; transition: all 0.15s; margin: 2px 8px; }
+  .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .nav-item.active { background: var(--primary); color: #fff; }
+  .nav-icon { width: 20px; height: 20px; flex-shrink: 0; }
+  .nav-label { flex: 1; font-size: 13px; white-space: nowrap; }
+  .nav-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--danger); color: #fff; font-weight: 600; }
+  .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-footer-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; background: none; border: none; color: var(--gray-400); font-size: 13px; cursor: pointer; border-radius: 8px; font-family: inherit; }
+  .sidebar-footer-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+  /* ============================
+     MAIN CONTENT
+     ============================ */
+  .main-wrapper { flex: 1; margin-left: var(--sidebar-width); transition: margin-left 0.25s ease; display: flex; flex-direction: column; min-height: 100vh; }
+  .sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-collapsed); }
+
+  .header { height: var(--header-height); background: #fff; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; padding: 0 24px; gap: 16px; position: sticky; top: 0; z-index: 50; }
+  .header-toggle { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 8px; color: var(--gray-600); }
+  .header-toggle:hover { background: var(--gray-100); }
+  .header-title { font-size: 18px; font-weight: 600; }
+  .header-actions { margin-left: auto; display: flex; gap: 8px; }
+  .header-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 8px; color: var(--gray-500); position: relative; }
+  .header-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+  .header-btn .badge { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; }
+
+  /* ============================
+     BANDEJA LAYOUT
+     ============================ */
+  .bandeja-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Tabs Left Sidebar */
+  .bandeja-tabs {
+    width: 220px;
+    background: #fff;
+    border-right: 1px solid var(--gray-200);
+    padding: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .bandeja-tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    text-align: left;
+    font-family: inherit;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .bandeja-tab:hover { background: var(--gray-50); color: var(--gray-800); }
+  .bandeja-tab.active { background: var(--primary-light); color: var(--primary); }
+  .bandeja-tab.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--primary);
+    border-radius: 0 2px 2px 0;
+  }
+  .bandeja-tab-icon { width: 18px; height: 18px; }
+  .bandeja-tab-badge {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--gray-100);
+    color: var(--gray-600);
+  }
+  .bandeja-tab.active .bandeja-tab-badge { background: var(--primary); color: #fff; }
+
+  /* Bandeja Content */
+  .bandeja-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Filters Bar */
+  .bandeja-filters {
+    padding: 16px 24px;
+    background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .filter-group { display: flex; align-items: center; gap: 8px; }
+  .filter-label { font-size: 12px; color: var(--gray-500); font-weight: 500; }
+  .filter-select {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--gray-700);
+    background: white;
+    cursor: pointer;
+  }
+  .filter-select:focus { outline: none; border-color: var(--primary); }
+  .filter-input {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    font-size: 13px;
+    width: 200px;
+  }
+  .filter-input:focus { outline: none; border-color: var(--primary); }
+  .filter-actions { margin-left: auto; display: flex; gap: 8px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    border: none;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary { background: white; border: 1px solid var(--gray-300); color: var(--gray-700); }
+  .btn-secondary:hover { background: var(--gray-50); }
+
+  /* Documents List */
+  .documents-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 24px;
+  }
+
+  .doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .doc-table th {
+    background: var(--gray-50);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .doc-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 13px;
+  }
+  .doc-table tr:hover { background: var(--gray-50); cursor: pointer; }
+  .doc-table tr.selected { 
+    background: linear-gradient(to right, var(--primary-light), rgba(26, 86, 219, 0.08)); 
+    box-shadow: inset 3px 0 0 var(--primary);
+  }
+  .doc-table tr.selected td:first-child { color: var(--primary-dark); }
+
+  .doc-num { font-weight: 600; color: var(--gray-800); }
+  .doc-remitente { color: var(--gray-700); }
+  .doc-asunto {
+    color: var(--gray-800);
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .doc-fecha { color: var(--gray-500); font-size: 12px; }
+
+  .doc-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .doc-status.recibido { background: #e0f2fe; color: #0369a1; }
+  .doc-status.derivacion { background: #ecfdf5; color: #047857; }
+  .doc-status.leido { background: var(--gray-100); color: var(--gray-600); }
+
+  .doc-actions {
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .doc-table tr:hover .doc-actions { opacity: 1; }
+  .action-btn {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    border: none; background: none;
+    cursor: pointer; border-radius: 6px;
+    color: var(--gray-500);
+    transition: all 0.15s;
+  }
+  .action-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+  .action-btn.primary:hover { background: var(--primary); color: #fff; }
+
+  /* ============================
+      ACORDEON (EXPANDIBLE BAJO FILA)
+      ============================ */
+  .accordion-row {
+    display: none;
+    background: linear-gradient(to right, var(--primary-light), var(--gray-50));
+    border-bottom: 1px solid rgba(26, 86, 219, 0.15);
+  }
+  .accordion-row.open { display: table-row; }
+  
+  .accordion-row td {
+    padding: 0;
+    border-bottom: none;
+  }
+  
+  .accordion-content {
+    padding: 20px;
+    animation: slideDown 0.2s ease;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 0 0 6px 6px;
+  }
+  
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  
+  .accordion-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-800);
+  }
+  
+  .accordion-close {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 6px;
+    color: var(--gray-500);
+  }
+  .accordion-close:hover { background: var(--gray-200); }
+
+  .accordion-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--gray-200);
+    margin-bottom: 16px;
+  }
+  
+  .accordion-tab {
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-500);
+    cursor: pointer;
+    position: relative;
+    font-family: inherit;
+  }
+  .accordion-tab:hover { color: var(--gray-700); }
+  .accordion-tab.active { color: var(--primary); }
+  .accordion-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary);
+  }
+
+  .accordion-body { display: none; }
+  .accordion-body.active { display: block; }
+
+  .accordion-form { display: flex; flex-direction: column; gap: 16px; }
+  
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--gray-600); }
+  .form-select, .form-textarea {
+    padding: 10px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary); }
+  .form-textarea { min-height: 80px; resize: vertical; }
+
+  .accordion-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .accordion-actions .btn { flex: 1; justify-content: center; }
+
+  /* ============================
+     TABS CONTENT STYLES
+     ============================ */
+  
+  /* Detail Grid */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid var(--gray-200);
+  }
+  .detail-item.full { grid-column: span 3; }
+  .detail-label {
+    font-size: 11px;
+    color: var(--gray-500);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .detail-value {
+    font-size: 13px;
+    color: var(--gray-800);
+    font-weight: 500;
+  }
+  .detail-value.priority-high { color: var(--danger); }
+  .detail-value.status-pending { color: var(--warning); }
+
+  /* Document Preview */
+  .document-preview {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .doc-preview-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    font-weight: 600;
+    color: var(--gray-700);
+  }
+  .doc-preview-body {
+    padding: 20px;
+    min-height: 150px;
+    background: #fafafa;
+  }
+  .doc-page {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--gray-800);
+    max-width: 500px;
+  }
+  .doc-line { margin: 0; }
+  .doc-line.blank { height: 12px; }
+  .doc-preview-footer {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--gray-200);
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* Tasks List */
+  .tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+  }
+  .task-item.pending { opacity: 0.7; }
+  .task-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--gray-300);
+    border-radius: 4px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .task-content { flex: 1; }
+  .task-title { font-size: 13px; font-weight: 500; color: var(--gray-800); }
+  .task-meta { font-size: 11px; color: var(--gray-500); margin-top: 4px; }
+
+  /* Timeline */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 0;
+  }
+  .timeline-item {
+    display: flex;
+    gap: 12px;
+    position: relative;
+  }
+  .timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 16px;
+    bottom: -16px;
+    width: 2px;
+    background: var(--gray-200);
+  }
+  .timeline-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--gray-300);
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .timeline-item.current .timeline-dot {
+    background: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-light);
+  }
+  .timeline-content { flex: 1; }
+  .timeline-title { font-size: 13px; font-weight: 500; color: var(--gray-800); }
+  .timeline-date { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+  .timeline-user { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+  /* Attachments */
+  .attachments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .attachment-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .attachment-name { flex: 1; color: var(--gray-700); }
+  .attachment-size { font-size: 11px; color: var(--gray-400); }
+  .btn-icon-sm {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: var(--gray-100);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .btn-icon-sm:hover { background: var(--gray-200); }
+
+  /* Observations */
+  .observations-list { display: flex; flex-direction: column; gap: 12px; }
+  .observation-item {
+    padding: 12px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+  }
+  .observation-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .observation-user { font-size: 12px; font-weight: 600; color: var(--gray-700); }
+  .observation-date { font-size: 11px; color: var(--gray-400); }
+  .observation-text { font-size: 13px; color: var(--gray-600); line-height: 1.5; }
+  .observation-input { display: flex; gap: 8px; align-items: flex-start; }
+  .observation-input textarea { flex: 1; }
+
+  /* References */
+  .references-list { display: flex; flex-direction: column; gap: 8px; }
+  .reference-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    align-items: center;
+  }
+  .ref-type {
+    font-size: 11px;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    min-width: 100px;
+  }
+  .ref-value { font-size: 13px; font-weight: 500; color: var(--gray-700); }
+
+  /* Ref. Zonales */
+  .refzonales-list { display: flex; flex-direction: column; gap: 10px; }
+  .refzonal-item {
+    padding: 12px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+  }
+  .refzonal-header { font-size: 12px; font-weight: 600; color: var(--gray-700); margin-bottom: 4px; }
+  .refzonal-value { font-size: 13px; color: var(--gray-600); }
+
+  /* Send to Form (same as derivar) */
+  .send-to-form { display: flex; flex-direction: column; gap: 16px; }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: #fff;
+    border-top: 1px solid var(--gray-200);
+  }
+  .pagination-info { font-size: 13px; color: var(--gray-500); }
+  .pagination-controls { display: flex; gap: 4px; }
+  .page-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--gray-200);
+    background: white;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--gray-600);
+    cursor: pointer;
+  }
+  .page-btn:hover { background: var(--gray-50); }
+  .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--gray-800);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+
+  /* ============================
+     THEME CONTROLS
+     ============================ */
+  .theme-controls {
+    position: fixed; top: 16px; right: 16px;
+    z-index: 500;
+    display: flex; gap: 8px;
+  }
+  .theme-chip {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 14px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 12px; font-weight: 600;
+    color: var(--gray-700);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .theme-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .theme-chip .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); }
+</style>
+</head>
+
+<!-- THEME PRESETS -->
+<div class="theme-controls">
+  <div class="theme-chip active" onclick="applyPreset('docflow', this)">
+    <span class="dot" style="background:#1a56db"></span> DocFlow
+  </div>
+  <div class="theme-chip" onclick="applyPreset('villarrica', this)">
+    <span class="dot" style="background:#166534"></span> Villarrica
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lampa', this)">
+    <span class="dot" style="background:#7c3aed"></span> Lampa
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lascondes', this)">
+    <span class="dot" style="background:#b91c1c"></span> Las Condes
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastIcon">✓</span>
+  <span id="toastMsg">Operacion exitosa</span>
+</div>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <span class="sidebar-brand-text" id="sidebarBrand">DocFlow</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-card">
+        <div class="sidebar-avatar">GM</div>
+        <div>
+          <div class="sidebar-user-name">Giannina Mondino</div>
+          <div class="sidebar-user-dept">Dept. Normativo</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Principal</div>
+        <a class="nav-item" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a class="nav-item active" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span class="nav-label">Bandeja de Entrada</span>
+          <span class="nav-badge">12</span>
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Expedientes</div>
+        <a class="nav-item has-nested" onclick="toggleNested(this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span class="nav-label">Expedientes</span>
+        </a>
+        <div class="nav-nested">
+          <a class="nav-item" href="#">Mis Expedientes</a>
+          <a class="nav-item" href="#">Compartido conmigo</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Documentos</div>
+        <a class="nav-item has-nested" onclick="toggleNested(this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          <span class="nav-label">Registro</span>
+        </a>
+        <div class="nav-nested">
+          <a class="nav-item" href="#">Registrar Doc. Recibido</a>
+          <a class="nav-item" href="#">Bandeja DocDigital</a>
+          <a class="nav-item" href="#">Bandeja Doc. Recibidos</a>
+          <a class="nav-item" href="#">Crear Doc. Externo</a>
+          <a class="nav-item" href="#">Crear Doc. Interno</a>
+        </div>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span class="nav-label">Consulta Documentos</span></a>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="nav-label">Consulta Tareas</span></a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Sistema</div>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg><span class="nav-label">Archivadores</span></a>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="nav-label">Reportes</span></a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-footer-btn" onclick="toggleSidebar()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg>
+        <span class="sidebar-footer-text">Colapsar menu</span>
+      </button>
+      <button class="sidebar-footer-btn" onclick="alert('Cerrando sesion')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="sidebar-footer-text">Cerrar sesion</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-wrapper">
+    <header class="header">
+      <button class="header-toggle" onclick="toggleSidebar()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <h1 class="header-title">Bandeja de Entrada</h1>
+      <div class="header-actions">
+        <button class="header-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="badge"></span></button>
+      </div>
+    </header>
+
+    <div class="bandeja-container">
+      <!-- Left Tabs -->
+      <div class="bandeja-tabs">
+        <button class="bandeja-tab active" onclick="selectBandejaTab(this, 'todos')">
+          <svg class="bandeja-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+          Todos
+          <span class="bandeja-tab-badge">12</span>
+        </button>
+        <button class="bandeja-tab" onclick="selectBandejaTab(this, 'recibidos')">
+          <svg class="bandeja-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Recibidos
+          <span class="bandeja-tab-badge">5</span>
+        </button>
+        <button class="bandeja-tab" onclick="selectBandejaTab(this, 'derivaciones')">
+          <svg class="bandeja-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          Derivaciones
+          <span class="bandeja-tab-badge">7</span>
+        </button>
+        <button class="bandeja-tab" onclick="selectBandejaTab(this, 'docdigital')">
+          <svg class="bandeja-tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          DocDigital
+          <span class="bandeja-tab-badge">0</span>
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="bandeja-content">
+        <div class="bandeja-filters">
+          <div class="filter-group">
+            <span class="filter-label">Tipo:</span>
+            <select class="filter-select">
+              <option value="">Todos</option>
+              <option value="ordinario">Ordinario</option>
+              <option value="memo">Memo</option>
+              <option value="oficio">Oficio</option>
+              <option value="despacho">Despacho</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">Desde:</span>
+            <input type="date" class="filter-input" style="width: 150px;">
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">Hasta:</span>
+            <input type="date" class="filter-input" style="width: 150px;">
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">Buscar:</span>
+            <input type="text" class="filter-input" placeholder="N°, asunto, remitente...">
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              Limpiar
+            </button>
+            <button class="btn btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Buscar
+            </button>
+          </div>
+        </div>
+
+        <div class="documents-list">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th style="width: 100px;">N° Doc</th>
+                <th style="width: 180px;">Remitente</th>
+                <th>Asunto</th>
+                <th style="width: 100px;">Fecha</th>
+                <th style="width: 100px;">Estado</th>
+                <th style="width: 80px;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="docTableBody">
+              <!-- Fila 1 -->
+              <tr class="doc-row" onclick="toggleAccordion(this, 'doc-245')">
+                <td><span class="doc-num">245/2026</span></td>
+                <td><span class="doc-remitente">Oficina de Partes</span></td>
+                <td><span class="doc-asunto">Solicitud de informe sobre tramite de permiso</span></td>
+                <td><span class="doc-fecha">07/04/2026</span></td>
+                <td><span class="doc-status derivacion">Derivacion</span></td>
+                <td>
+                  <div class="doc-actions">
+                    <button class="action-btn" title="Ver" onclick="event.stopPropagation()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    <button class="action-btn primary" title="Atender" onclick="event.stopPropagation(); toggleAccordion(this.closest('tr'), 'doc-245')">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- Acordeon Fila 1 -->
+              <tr class="accordion-row" id="doc-245">
+                <td colspan="6">
+                  <div class="accordion-content">
+                    <div class="accordion-header">
+                      <span class="accordion-title">Atender Documento: Ord. N° 245/2026</span>
+                      <button class="accordion-close" onclick="closeAccordion('doc-245')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                    <div class="accordion-tabs">
+                      <button class="accordion-tab active" onclick="selectAccordionTab(this, 'detalle')">Detalle</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'documento')">Documento</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'tareas')">Tareas</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'historial')">Historial</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'adjuntos')">Adjuntos</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'observaciones')">Observaciones</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'referencias')">Referencias</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'refzonales')">Ref. Zonales</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'enviar')">Enviar a</button>
+                    </div>
+                    
+                    <!-- TAB: Detalle -->
+                    <div class="accordion-body active" id="doc-245-detalle">
+                      <div class="detail-grid">
+                        <div class="detail-item"><span class="detail-label">N° Documento</span><span class="detail-value">245/2026</span></div>
+                        <div class="detail-item"><span class="detail-label">Tipo</span><span class="detail-value">Ordinario</span></div>
+                        <div class="detail-item"><span class="detail-label">Fecha Recepcion</span><span class="detail-value">07/04/2026 09:15</span></div>
+                        <div class="detail-item"><span class="detail-label">Fecha Limite</span><span class="detail-value">14/04/2026</span></div>
+                        <div class="detail-item"><span class="detail-label">Prioridad</span><span class="detail-value priority-high">Alta</span></div>
+                        <div class="detail-item"><span class="detail-label">Estado</span><span class="detail-value status-pending">Pendiente</span></div>
+                        <div class="detail-item full"><span class="detail-label">Remitente</span><span class="detail-value">Oficina de Partes - Ilustre Municipal</span></div>
+                        <div class="detail-item full"><span class="detail-label">Asunto</span><span class="detail-value">Solicitud de informe sobre tramite de permiso de construccion</span></div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Documento -->
+                    <div class="accordion-body" id="doc-245-documento">
+                      <div class="document-preview">
+                        <div class="doc-preview-header">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          <span>ORD_N245_2026.pdf</span>
+                        </div>
+                        <div class="doc-preview-body">
+                          <div class="doc-page">
+                            <p class="doc-line">Ilustre Municipalidad de Villarrica</p>
+                            <p class="doc-line">Oficina de Partes</p>
+                            <p class="doc-line blank">&nbsp;</p>
+                            <p class="doc-line">Villarrica, 07 de Abril de 2026</p>
+                            <p class="doc-line blank">&nbsp;</p>
+                            <p class="doc-line">Sr. Director de Obras</p>
+                            <p class="doc-line">Presente</p>
+                            <p class="doc-line blank">&nbsp;</p>
+                            <p class="doc-line">Por medio del presente, se solicita informe detallado sobre el estado...</p>
+                          </div>
+                        </div>
+                        <div class="doc-preview-footer">
+                          <button class="btn btn-secondary btn-sm">Descargar</button>
+                          <button class="btn btn-secondary btn-sm">Firmar Digital</button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Tareas -->
+                    <div class="accordion-body" id="doc-245-tareas">
+                      <div class="tasks-list">
+                        <div class="task-item">
+                          <div class="task-checkbox"></div>
+                          <div class="task-content">
+                            <div class="task-title">Revisar antecedentes del permiso</div>
+                            <div class="task-meta">Asignado a: Giannina Mondino · Vence: 10/04/2026</div>
+                          </div>
+                        </div>
+                        <div class="task-item pending">
+                          <div class="task-checkbox"></div>
+                          <div class="task-content">
+                            <div class="task-title">Emitir informe tecnico</div>
+                            <div class="task-meta">Sin asignar · Vence: 14/04/2026</div>
+                          </div>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" style="margin-top:12px">+ Crear Tarea</button>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Historial -->
+                    <div class="accordion-body" id="doc-245-historial">
+                      <div class="timeline">
+                        <div class="timeline-item">
+                          <div class="timeline-dot"></div>
+                          <div class="timeline-content">
+                            <div class="timeline-title">Recibido por Oficina de Partes</div>
+                            <div class="timeline-date">07/04/2026 09:15</div>
+                            <div class="timeline-user">Sistema automatico</div>
+                          </div>
+                        </div>
+                        <div class="timeline-item">
+                          <div class="timeline-dot"></div>
+                          <div class="timeline-content">
+                            <div class="timeline-title">Derivado a Dept. Normativo</div>
+                            <div class="timeline-date">07/04/2026 09:45</div>
+                            <div class="timeline-user">Juan Perez (Director)</div>
+                          </div>
+                        </div>
+                        <div class="timeline-item current">
+                          <div class="timeline-dot"></div>
+                          <div class="timeline-content">
+                            <div class="timeline-title">Asignado para atencion</div>
+                            <div class="timeline-date">07/04/2026 10:30</div>
+                            <div class="timeline-user">Giannina Mondino</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Adjuntos -->
+                    <div class="accordion-body" id="doc-245-adjuntos">
+                      <div class="attachments-list">
+                        <div class="attachment-item">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          <span class="attachment-name">Permiso_Construccion_2026.pdf</span>
+                          <span class="attachment-size">2.4 MB</span>
+                          <button class="btn-icon-sm">↓</button>
+                        </div>
+                        <div class="attachment-item">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          <span class="attachment-name">Planos_Layout.pdf</span>
+                          <span class="attachment-size">5.1 MB</span>
+                          <button class="btn-icon-sm">↓</button>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" style="margin-top:8px">+ Adjuntar Archivo</button>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Observaciones -->
+                    <div class="accordion-body" id="doc-245-observaciones">
+                      <div class="observations-list">
+                        <div class="observation-item">
+                          <div class="observation-header">
+                            <span class="observation-user">Giannina Mondino</span>
+                            <span class="observation-date">07/04/2026 11:20</span>
+                          </div>
+                          <div class="observation-text">Se requiere revisar la documentacion entregada antes de derivar a Direccion de Obras. Hay inconsistencias en los planos.</div>
+                        </div>
+                        <div class="observation-input">
+                          <textarea class="form-textarea" placeholder="Agregar observacion..."></textarea>
+                          <button class="btn btn-primary btn-sm">Guardar</button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Referencias -->
+                    <div class="accordion-body" id="doc-245-referencias">
+                      <div class="references-list">
+                        <div class="reference-item">
+                          <span class="ref-type">Cite Relacionado</span>
+                          <span class="ref-value">ORD-2026-089</span>
+                        </div>
+                        <div class="reference-item">
+                          <span class="ref-type">Expediente</span>
+                          <span class="ref-value">EXP-2026-00456</span>
+                        </div>
+                        <div class="reference-item">
+                          <span class="ref-type">Cite Anterior</span>
+                          <span class="ref-value">MEM-2026-012</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Referencias Zonales -->
+                    <div class="accordion-body" id="doc-245-refzonales">
+                      <div class="refzonales-list">
+                        <div class="refzonal-item">
+                          <div class="refzonal-header">Zona: Centro Urbano</div>
+                          <div class="refzonal-value">Rol·SII: 1234-5 · Manzana: 12 · Predio: 8</div>
+                        </div>
+                        <div class="refzonal-item">
+                          <div class="refzonal-header">Zona: Areas Verdes</div>
+                          <div class="refzonal-value">Distancia: 45mts - No aplica restriccion</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Enviar a -->
+                    <div class="accordion-body" id="doc-245-enviar">
+                      <div class="send-to-form">
+                        <div class="form-group">
+                          <label class="form-label">Destinatario *</label>
+                          <select class="form-select">
+                            <option value="">Seleccionar...</option>
+                            <option value="admin">Admin - Sistemas</option>
+                            <option value="normativo">Departamento Normativo</option>
+                            <option value="partes">Oficina de Partes</option>
+                            <option value="obras">Direccion de Obras</option>
+                            <option value="secretaria">Secretaria Municipal</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Instrucciones</label>
+                          <textarea class="form-textarea" placeholder="Indique las instrucciones para el destinatario..."></textarea>
+                        </div>
+                        <div class="accordion-actions">
+                          <button class="btn btn-secondary" onclick="closeAccordion('doc-245')">Cancelar</button>
+                          <button class="btn btn-primary" onclick="derivarDocumento('doc-245')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>
+                            Derivar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Fila 2 -->
+              <tr class="doc-row" onclick="toggleAccordion(this, 'doc-089')">
+                <td><span class="doc-num">089/2026</span></td>
+                <td><span class="doc-remitente">Admin - TI</span></td>
+                <td><span class="doc-asunto">Memo: Revisar presupuesto departamental</span></td>
+                <td><span class="doc-fecha">07/04/2026</span></td>
+                <td><span class="doc-status derivacion">Derivacion</span></td>
+                <td>
+                  <div class="doc-actions">
+                    <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    <button class="action-btn primary" title="Atender" onclick="event.stopPropagation(); toggleAccordion(this.closest('tr'), 'doc-089')">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr class="accordion-row" id="doc-089">
+                <td colspan="6">
+                  <div class="accordion-content">
+                    <div class="accordion-header">
+                      <span class="accordion-title">Atender Documento: Memo N° 089/2026</span>
+                      <button class="accordion-close" onclick="closeAccordion('doc-089')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                    <div class="accordion-tabs">
+                      <button class="accordion-tab active" onclick="selectAccordionTab(this, 'detalle')">Detalle</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'documento')">Documento</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'tareas')">Tareas</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'historial')">Historial</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'adjuntos')">Adjuntos</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'observaciones')">Observaciones</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'referencias')">Referencias</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'refzonales')">Ref. Zonales</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'enviar')">Enviar a</button>
+                    </div>
+                    
+                    <!-- TAB: Detalle -->
+                    <div class="accordion-body active" id="doc-089-detalle">
+                      <div class="detail-grid">
+                        <div class="detail-item"><span class="detail-label">N° Documento</span><span class="detail-value">089/2026</span></div>
+                        <div class="detail-item"><span class="detail-label">Tipo</span><span class="detail-value">Memo</span></div>
+                        <div class="detail-item"><span class="detail-label">Fecha Recepcion</span><span class="detail-value">07/04/2026 08:30</span></div>
+                        <div class="detail-item"><span class="detail-label">Fecha Limite</span><span class="detail-value">--</span></div>
+                        <div class="detail-item"><span class="detail-label">Prioridad</span><span class="detail-value">Normal</span></div>
+                        <div class="detail-item"><span class="detail-label">Estado</span><span class="detail-value status-pending">Pendiente</span></div>
+                        <div class="detail-item full"><span class="detail-label">Remitente</span><span class="detail-value">Admin - Sistemas</span></div>
+                        <div class="detail-item full"><span class="detail-label">Asunto</span><span class="detail-value">Memo: Revisar presupuesto departamental</span></div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Documento -->
+                    <div class="accordion-body" id="doc-089-documento">
+                      <div class="document-preview">
+                        <div class="doc-preview-header">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          <span>MEM_089_2026.pdf</span>
+                        </div>
+                        <div class="doc-preview-body">
+                          <div class="doc-page">
+                            <p class="doc-line">MEMORANDUM N° 089/2026</p>
+                            <p class="doc-line">De: Admin - Sistemas</p>
+                            <p class="doc-line">Para: Dept. Normativo</p>
+                            <p class="doc-line blank">&nbsp;</p>
+                            <p class="doc-line">Se solicita revisar y validar el presupuesto...</p>
+                          </div>
+                        </div>
+                        <div class="doc-preview-footer">
+                          <button class="btn btn-secondary btn-sm">Descargar</button>
+                          <button class="btn btn-secondary btn-sm">Firmar Digital</button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Tareas -->
+                    <div class="accordion-body" id="doc-089-tareas">
+                      <div class="tasks-list">
+                        <div class="task-item pending">
+                          <div class="task-checkbox"></div>
+                          <div class="task-content">
+                            <div class="task-title">Revisar presupuesto 2026</div>
+                            <div class="task-meta">Sin asignar · Sin fecha</div>
+                          </div>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" style="margin-top:12px">+ Crear Tarea</button>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Historial -->
+                    <div class="accordion-body" id="doc-089-historial">
+                      <div class="timeline">
+                        <div class="timeline-item">
+                          <div class="timeline-dot"></div>
+                          <div class="timeline-content">
+                            <div class="timeline-title">Recibido</div>
+                            <div class="timeline-date">07/04/2026 08:30</div>
+                          </div>
+                        </div>
+                        <div class="timeline-item current">
+                          <div class="timeline-dot"></div>
+                          <div class="timeline-content">
+                            <div class="timeline-title">Asignado para atencion</div>
+                            <div class="timeline-date">07/04/2026 09:00</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Adjuntos -->
+                    <div class="accordion-body" id="doc-089-adjuntos">
+                      <div class="attachments-list">
+                        <button class="btn btn-secondary btn-sm" style="margin-top:8px">+ Adjuntar Archivo</button>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Observaciones -->
+                    <div class="accordion-body" id="doc-089-observaciones">
+                      <div class="observations-list">
+                        <div class="observation-input">
+                          <textarea class="form-textarea" placeholder="Agregar observacion..."></textarea>
+                          <button class="btn btn-primary btn-sm">Guardar</button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Referencias -->
+                    <div class="accordion-body" id="doc-089-referencias">
+                      <div class="references-list">
+                        <div class="reference-item">
+                          <span class="ref-type">Expediente</span>
+                          <span class="ref-value">EXP-2026-00321</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Ref. Zonales -->
+                    <div class="accordion-body" id="doc-089-refzonales">
+                      <p style="color:var(--gray-500);font-size:13px;">Sin referencias zonales</p>
+                    </div>
+                    
+                    <!-- TAB: Enviar a -->
+                    <div class="accordion-body" id="doc-089-enviar">
+                      <div class="send-to-form">
+                        <div class="form-group">
+                          <label class="form-label">Destinatario *</label>
+                          <select class="form-select"><option value="">Seleccionar...</option></select>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Instrucciones</label>
+                          <textarea class="form-textarea" placeholder="Indique las instrucciones..."></textarea>
+                        </div>
+                        <div class="accordion-actions">
+                          <button class="btn btn-secondary" onclick="closeAccordion('doc-089')">Cancelar</button>
+                          <button class="btn btn-primary" onclick="derivarDocumento('doc-089')">Derivar</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Fila 3 -->
+              <tr class="doc-row" onclick="toggleAccordion(this, 'doc-156')">
+                <td><span class="doc-num">156/2026</span></td>
+                <td><span class="doc-remitente">Secretaria Municipal</span></td>
+                <td><span class="doc-asunto">Oficio: Respuesta a consulta ciudadana</span></td>
+                <td><span class="doc-fecha">06/04/2026</span></td>
+                <td><span class="doc-status recibido">Recibido</span></td>
+                <td>
+                  <div class="doc-actions">
+                    <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    <button class="action-btn primary" title="Atender" onclick="event.stopPropagation(); toggleAccordion(this.closest('tr'), 'doc-156')">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr class="accordion-row" id="doc-156">
+                <td colspan="6">
+                  <div class="accordion-content">
+                    <div class="accordion-header">
+                      <span class="accordion-title">Atender Documento: Oficio N° 156/2026</span>
+                      <button class="accordion-close" onclick="closeAccordion('doc-156')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                    <div class="accordion-tabs">
+                      <button class="accordion-tab active" onclick="selectAccordionTab(this, 'detalle')">Detalle</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'documento')">Documento</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'tareas')">Tareas</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'historial')">Historial</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'adjuntos')">Adjuntos</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'observaciones')">Observaciones</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'referencias')">Referencias</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'refzonales')">Ref. Zonales</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'enviar')">Enviar a</button>
+                    </div>
+                    
+                    <!-- TAB: Detalle -->
+                    <div class="accordion-body active" id="doc-156-detalle">
+                      <div class="detail-grid">
+                        <div class="detail-item"><span class="detail-label">N° Documento</span><span class="detail-value">156/2026</span></div>
+                        <div class="detail-item"><span class="detail-label">Tipo</span><span class="detail-value">Oficio</span></div>
+                        <div class="detail-item"><span class="detail-label">Fecha Recepcion</span><span class="detail-value">06/04/2026 14:20</span></div>
+                        <div class="detail-item"><span class="detail-label">Fecha Limite</span><span class="detail-value">20/04/2026</span></div>
+                        <div class="detail-item"><span class="detail-label">Prioridad</span><span class="detail-value">Normal</span></div>
+                        <div class="detail-item"><span class="detail-label">Estado</span><span class="detail-value">Recibido</span></div>
+                        <div class="detail-item full"><span class="detail-label">Remitente</span><span class="detail-value">Secretaria Municipal</span></div>
+                        <div class="detail-item full"><span class="detail-label">Asunto</span><span class="detail-value">Oficio: Respuesta a consulta ciudadana sobre zonificacion</span></div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Documento -->
+                    <div class="accordion-body" id="doc-156-documento">
+                      <div class="document-preview">
+                        <div class="doc-preview-header">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          <span>OFICIO_156_2026.pdf</span>
+                        </div>
+                        <div class="doc-preview-body">
+                          <div class="doc-page">
+                            <p class="doc-line">OFICIO N° 156/2026</p>
+                            <p class="doc-line">Villarrica, 06 de Abril de 2026</p>
+                            <p class="doc-line blank">&nbsp;</p>
+                            <p class="doc-line">De: Secretaria Municipal</p>
+                            <p class="doc-line">Para: Vecino concernido</p>
+                          </div>
+                        </div>
+                        <div class="doc-preview-footer">
+                          <button class="btn btn-secondary btn-sm">Descargar</button>
+                          <button class="btn btn-secondary btn-sm">Firmar Digital</button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Resto de tabs para doc-156 (Tareas, Historial, etc.) -->
+                    <div class="accordion-body" id="doc-156-tareas">
+                      <p style="color:var(--gray-500);font-size:13px;">Sin tareas asignadas</p>
+                    </div>
+                    <div class="accordion-body" id="doc-156-historial">
+                      <div class="timeline">
+                        <div class="timeline-item">
+                          <div class="timeline-dot"></div>
+                          <div class="timeline-content">
+                            <div class="timeline-title">Recibido</div>
+                            <div class="timeline-date">06/04/2026 14:20</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="accordion-body" id="doc-156-adjuntos">
+                      <button class="btn btn-secondary btn-sm" style="margin-top:8px">+ Adjuntar Archivo</button>
+                    </div>
+                    <div class="accordion-body" id="doc-156-observaciones">
+                      <div class="observation-input">
+                        <textarea class="form-textarea" placeholder="Agregar observacion..."></textarea>
+                        <button class="btn btn-primary btn-sm">Guardar</button>
+                      </div>
+                    </div>
+                    <div class="accordion-body" id="doc-156-referencias">
+                      <div class="references-list">
+                        <div class="reference-item">
+                          <span class="ref-type">Cite Relacionado</span>
+                          <span class="ref-value">CONS-2026-045</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="accordion-body" id="doc-156-refzonales">
+                      <div class="refzonales-list">
+                        <div class="refzonal-item">
+                          <div class="refzonal-header">Zona: Residencial</div>
+                          <div class="refzonal-value">Zonificacion: R1 - Residencial Densidad Baja</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="accordion-body" id="doc-156-enviar">
+                      <div class="send-to-form">
+                        <div class="form-group">
+                          <label class="form-label">Destinatario *</label>
+                          <select class="form-select"><option value="">Seleccionar...</option></select>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Instrucciones</label>
+                          <textarea class="form-textarea" placeholder="Indique las instrucciones..."></textarea>
+                        </div>
+                        <div class="accordion-actions">
+                          <button class="btn btn-secondary" onclick="closeAccordion('doc-156')">Cancelar</button>
+                          <button class="btn btn-primary" onclick="derivarDocumento('doc-156')">Derivar</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Fila 4 -->
+              <tr class="doc-row" onclick="toggleAccordion(this, 'doc-078')">
+                <td><span class="doc-num">078/2026</span></td>
+                <td><span class="doc-remitente">Direccion de Obras</span></td>
+                <td><span class="doc-asunto">Ordinario: Solicitud de antecedentes para разрешение</span></td>
+                <td><span class="doc-fecha">05/04/2026</span></td>
+                <td><span class="doc-status leido">Leido</span></td>
+                <td>
+                  <div class="doc-actions">
+                    <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                    <button class="action-btn primary" title="Atender" onclick="event.stopPropagation(); toggleAccordion(this.closest('tr'), 'doc-078')">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr class="accordion-row" id="doc-078">
+                <td colspan="6">
+                  <div class="accordion-content">
+                    <div class="accordion-header">
+                      <span class="accordion-title">Atender Documento: Ord. N° 078/2026</span>
+                      <button class="accordion-close" onclick="closeAccordion('doc-078')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                    <div class="accordion-tabs">
+                      <button class="accordion-tab active" onclick="selectAccordionTab(this, 'detalle')">Detalle</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'documento')">Documento</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'tareas')">Tareas</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'historial')">Historial</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'adjuntos')">Adjuntos</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'observaciones')">Observaciones</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'referencias')">Referencias</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'refzonales')">Ref. Zonales</button>
+                      <button class="accordion-tab" onclick="selectAccordionTab(this, 'enviar')">Enviar a</button>
+                    </div>
+                    
+                    <!-- TAB: Detalle -->
+                    <div class="accordion-body active" id="doc-078-detalle">
+                      <div class="detail-grid">
+                        <div class="detail-item"><span class="detail-label">N° Documento</span><span class="detail-value">078/2026</span></div>
+                        <div class="detail-item"><span class="detail-label">Tipo</span><span class="detail-value">Ordinario</span></div>
+                        <div class="detail-item"><span class="detail-label">Fecha Recepcion</span><span class="detail-value">05/04/2026 11:45</span></div>
+                        <div class="detail-item"><span class="detail-label">Fecha Limite</span><span class="detail-value">12/04/2026</span></div>
+                        <div class="detail-item"><span class="detail-label">Prioridad</span><span class="detail-value priority-high">Alta</span></div>
+                        <div class="detail-item"><span class="detail-label">Estado</span><span class="detail-value">Leido</span></div>
+                        <div class="detail-item full"><span class="detail-label">Remitente</span><span class="detail-value">Direccion de Obras - Sr. Juan Rodriguez</span></div>
+                        <div class="detail-item full"><span class="detail-label">Asunto</span><span class="detail-value">Ordinario: Solicitud de antecedentes para разреcion de permiso de construccion</span></div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Documento -->
+                    <div class="accordion-body" id="doc-078-documento">
+                      <div class="document-preview">
+                        <div class="doc-preview-header">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          <span>ORD_078_2026.pdf</span>
+                        </div>
+                        <div class="doc-preview-body">
+                          <div class="doc-page">
+                            <p class="doc-line">ORDINARIO N° 078/2026</p>
+                            <p class="doc-line">Villarrica, 05 de Abril de 2026</p>
+                            <p class="doc-line blank">&nbsp;</p>
+                            <p class="doc-line">De: Director de Obras</p>
+                            <p class="doc-line">Para: Dept. Normativo</p>
+                            <p class="doc-line blank">&nbsp;</p>
+                            <p class="doc-line">Por medio del presente se Solicita remitir...</p>
+                          </div>
+                        </div>
+                        <div class="doc-preview-footer">
+                          <button class="btn btn-secondary btn-sm">Descargar</button>
+                          <button class="btn btn-secondary btn-sm">Firmar Digital</button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Tareas -->
+                    <div class="accordion-body" id="doc-078-tareas">
+                      <div class="tasks-list">
+                        <div class="task-item">
+                          <div class="task-checkbox"></div>
+                          <div class="task-content">
+                            <div class="task-title">Solicitar antecedentes a solicitante</div>
+                            <div class="task-meta">Asignado a: Giannina Mondino · Vence: 08/04/2026</div>
+                          </div>
+                        </div>
+                        <div class="task-item pending">
+                          <div class="task-checkbox"></div>
+                          <div class="task-content">
+                            <div class="task-title">Revisar cumplimiento normativo</div>
+                            <div class="task-meta">Sin asignar · Vence: 12/04/2026</div>
+                          </div>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" style="margin-top:12px">+ Crear Tarea</button>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Historial -->
+                    <div class="accordion-body" id="doc-078-historial">
+                      <div class="timeline">
+                        <div class="timeline-item">
+                          <div class="timeline-dot"></div>
+                          <div class="timeline-content">
+                            <div class="timeline-title">Recibido por Oficina de Partes</div>
+                            <div class="timeline-date">05/04/2026 11:45</div>
+                          </div>
+                        </div>
+                        <div class="timeline-item">
+                          <div class="timeline-dot"></div>
+                          <div class="timeline-content">
+                            <div class="timeline-title">Derivado a Dept. Normativo</div>
+                            <div class="timeline-date">05/04/2026 12:00</div>
+                          </div>
+                        </div>
+                        <div class="timeline-item">
+                          <div class="timeline-dot"></div>
+                          <div class="timeline-content">
+                            <div class="timeline-title">Marcado como leido</div>
+                            <div class="timeline-date">05/04/2026 14:30</div>
+                            <div class="timeline-user">Giannina Mondino</div>
+                          </div>
+                        </div>
+                        <div class="timeline-item current">
+                          <div class="timeline-dot"></div>
+                          <div class="timeline-content">
+                            <div class="timeline-title">Tarea creada: Solicitar antecedentes</div>
+                            <div class="timeline-date">05/04/2026 14:35</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Adjuntos -->
+                    <div class="accordion-body" id="doc-078-adjuntos">
+                      <div class="attachments-list">
+                        <div class="attachment-item">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          <span class="attachment-name">Solicitud_Permiso_2026.pdf</span>
+                          <span class="attachment-size">1.8 MB</span>
+                          <button class="btn-icon-sm">↓</button>
+                        </div>
+                        <div class="attachment-item">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                          <span class="attachment-name">Certificado_Zona.pdf</span>
+                          <span class="attachment-size">0.5 MB</span>
+                          <button class="btn-icon-sm">↓</button>
+                        </div>
+                        <div class="attachment-item">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                          <span class="attachment-name">Fotos_Terreno.jpg</span>
+                          <span class="attachment-size">3.2 MB</span>
+                          <button class="btn-icon-sm">↓</button>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" style="margin-top:8px">+ Adjuntar Archivo</button>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Observaciones -->
+                    <div class="accordion-body" id="doc-078-observaciones">
+                      <div class="observations-list">
+                        <div class="observation-item">
+                          <div class="observation-header">
+                            <span class="observation-user">Giannina Mondino</span>
+                            <span class="observation-date">05/04/2026 14:32</span>
+                          </div>
+                          <div class="observation-text">El documento requiere revision de zonificacion antes de continuar con el proceso de permiso.</div>
+                        </div>
+                        <div class="observation-item">
+                          <div class="observation-header">
+                            <span class="observation-user">Juan Rodriguez</span>
+                            <span class="observation-date">05/04/2026 11:50</span>
+                          </div>
+                          <div class="observation-text">Urgente - el solicitante tiene plazo hasta el 15/04 para completar la documentacion.</div>
+                        </div>
+                        <div class="observation-input">
+                          <textarea class="form-textarea" placeholder="Agregar observacion..."></textarea>
+                          <button class="btn btn-primary btn-sm">Guardar</button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Referencias -->
+                    <div class="accordion-body" id="doc-078-referencias">
+                      <div class="references-list">
+                        <div class="reference-item">
+                          <span class="ref-type">Cite Relacionado</span>
+                          <span class="ref-value">ORD-2026-045</span>
+                        </div>
+                        <div class="reference-item">
+                          <span class="ref-type">Expediente</span>
+                          <span class="ref-value">EXP-2026-00289</span>
+                        </div>
+                        <div class="reference-item">
+                          <span class="ref-type">Solicitud PC</span>
+                          <span class="ref-value">PC-2026-00156</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Ref. Zonales -->
+                    <div class="accordion-body" id="doc-078-refzonales">
+                      <div class="refzonales-list">
+                        <div class="refzonal-item">
+                          <div class="refzonal-header">Zona: Industrial Liviana</div>
+                          <div class="refzonal-value">Codigo: IU -允许轻型工业用途</div>
+                        </div>
+                        <div class="refzonal-item">
+                          <div class="refzonal-header">Zona: Reserves Hidraulicas</div>
+                          <div class="refzonal-value">Distancia: 120mts - Requiere autorizacion</div>
+                        </div>
+                        <div class="refzonal-item">
+                          <div class="refzonal-header">Linderos</div>
+                          <div class="refzonal-value">Norte: Calle San Martin · Sur: Rio Chol-Chol · Este: Av. Principal · Oeste: Fundo El Paraiso</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- TAB: Enviar a -->
+                    <div class="accordion-body" id="doc-078-enviar">
+                      <div class="send-to-form">
+                        <div class="form-group">
+                          <label class="form-label">Destinatario *</label>
+                          <select class="form-select">
+                            <option value="">Seleccionar...</option>
+                            <option value="admin">Admin - Sistemas</option>
+                            <option value="normativo">Departamento Normativo</option>
+                            <option value="partes">Oficina de Partes</option>
+                            <option value="obras">Direccion de Obras</option>
+                            <option value="secretaria">Secretaria Municipal</option>
+                            <option value="legal">Dept. Legal</option>
+                          </select>
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label">Instrucciones</label>
+                          <textarea class="form-textarea" placeholder="Indique las instrucciones para el destinatario..."></textarea>
+                        </div>
+                        <div class="accordion-actions">
+                          <button class="btn btn-secondary" onclick="closeAccordion('doc-078')">Cancelar</button>
+                          <button class="btn btn-primary" onclick="derivarDocumento('doc-078')">Derivar</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <div class="pagination-info">Mostrando 1-4 de 12 documentos</div>
+          <div class="pagination-controls">
+            <button class="page-btn">&laquo;</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">&raquo;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const root = document.documentElement;
+const presets = {
+  docflow: { name: 'DocFlow', primary: '#1a56db', primaryDark: '#1240a8', primaryLight: '#e8effc', primaryRgb: '26, 86, 219' },
+  villarrica: { name: 'SGD Villarrica', primary: '#166534', primaryDark: '#14532d', primaryLight: '#f0fdf4', primaryRgb: '22, 101, 52' },
+  lampa: { name: 'DocFlow Lampa', primary: '#7c3aed', primaryDark: '#5b21b6', primaryLight: '#f5f3ff', primaryRgb: '124, 58, 237' },
+  lascondes: { name: 'GesDoc', primary: '#b91c1c', primaryDark: '#991b1b', primaryLight: '#fef2f2', primaryRgb: '185, 28, 28' }
+};
+
+function applyPreset(name, chip) {
+  const p = presets[name];
+  if (!p) return;
+  if (chip) { document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('active')); chip.classList.add('active'); }
+  root.style.setProperty('--primary', p.primary);
+  root.style.setProperty('--primary-dark', p.primaryDark);
+  root.style.setProperty('--primary-light', p.primaryLight);
+  root.style.setProperty('--primary-rgb', p.primaryRgb);
+  document.getElementById('sidebarBrand').textContent = p.name;
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+function toggleNested(el) { el.classList.toggle('expanded'); const next = el.nextElementSibling; if (next && next.classList.contains('nav-nested')) { next.classList.toggle('show'); } }
+
+function selectBandejaTab(btn, tab) {
+  document.querySelectorAll('.bandeja-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// Acordeon functions
+let currentAccordion = null;
+
+function toggleAccordion(row, accordionId) {
+  // Close previous accordion if different
+  if (currentAccordion && currentAccordion !== accordionId) {
+    closeAccordion(currentAccordion);
+  }
+  
+  const accordion = document.getElementById(accordionId);
+  const isOpen = accordion.classList.contains('open');
+  
+  // Close all accordions first
+  document.querySelectorAll('.accordion-row').forEach(row => {
+    row.classList.remove('open');
+    row.previousElementSibling.classList.remove('selected');
+  });
+  
+  if (!isOpen) {
+    accordion.classList.add('open');
+    row.classList.add('selected');
+    currentAccordion = accordionId;
+  } else {
+    currentAccordion = null;
+  }
+}
+
+function closeAccordion(accordionId) {
+  const accordion = document.getElementById(accordionId);
+  accordion.classList.remove('open');
+  if (accordion.previousElementSibling && accordion.previousElementSibling.classList.contains('doc-row')) {
+    accordion.previousElementSibling.classList.remove('selected');
+  }
+  if (currentAccordion === accordionId) {
+    currentAccordion = null;
+  }
+}
+
+function selectAccordionTab(btn, tabId) {
+  const parent = btn.closest('.accordion-content');
+  parent.querySelectorAll('.accordion-tab').forEach(t => t.classList.remove('active'));
+  parent.querySelectorAll('.accordion-body').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  parent.querySelector('#' + tabId).classList.add('active');
+}
+
+function derivarDocumento(docId) {
+  showToast('Derivacion creada correctamente', 'success');
+  closeAccordion(docId);
+}
+
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').textContent = type === 'success' ? '✓' : '✕';
+  toast.className = 'toast ' + type + ' show';
+  setTimeout(() => { toast.classList.remove('show'); }, 3000);
+}
+</script>
+</body>
+</html>

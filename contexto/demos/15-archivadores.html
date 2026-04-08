@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocFlow v3 — Archivadores</title>
+  <style>
+    :root {
+      --primary: #1a56db;
+      --primary-light: #e8effc;
+      --primary-dark: #1240a8;
+      --success: #0d9f6e;
+      --warning: #e3a008;
+      --danger: #e02424;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --sidebar-width: 260px;
+      --header-height: 64px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--gray-50); color: var(--gray-800);
+      font-size: 14px;
+    }
+    .app-layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--gray-900);
+      color: #fff;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-brand { height: var(--header-height); display: flex; align-items: center; padding: 0 16px; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-logo { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-brand-text { font-size: 16px; font-weight: 700; }
+    .sidebar-user { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-user-card { display: flex; align-items: center; gap: 12px; }
+    .sidebar-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .sidebar-user-name { font-size: 13px; font-weight: 600; }
+    .sidebar-user-dept { font-size: 11px; color: var(--gray-400); }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+    .sidebar-section { padding: 8px 12px; }
+    .sidebar-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--gray-500); padding: 8px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--gray-300); border-radius: 8px; cursor: pointer; text-decoration: none; }
+    .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .nav-item.active { background: var(--primary); color: #fff; }
+    .nav-icon { width: 20px; height: 20px; }
+    .nav-label { flex: 1; font-size: 13px; }
+
+    /* Main */
+    .main-wrapper { flex: 1; margin-left: var(--sidebar-width); }
+    .header { height: var(--header-height); background: #fff; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; padding: 0 24px; gap: 16px; }
+    .header-toggle { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 8px; color: var(--gray-600); }
+    .header-toggle:hover { background: var(--gray-100); }
+    .header-title { font-size: 18px; font-weight: 600; }
+    .header-actions { margin-left: auto; display: flex; gap: 8px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: white; border: 1px solid var(--gray-300); color: var(--gray-700); }
+
+    /* Content */
+    .content { padding: 24px; }
+
+    /* Year Tabs */
+    .year-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--gray-200);
+      padding-bottom: 8px;
+    }
+    .year-tab {
+      padding: 8px 16px;
+      border: none;
+      background: none;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gray-500);
+      cursor: pointer;
+      border-radius: 6px;
+      font-family: inherit;
+    }
+    .year-tab:hover { background: var(--gray-100); color: var(--gray-700); }
+    .year-tab.active { background: var(--primary); color: white; }
+
+    /* Archive Grid */
+    .archive-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .archive-month {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .month-header {
+      padding: 12px 16px;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .month-name { font-size: 14px; font-weight: 600; color: var(--gray-700); }
+    .month-count { font-size: 12px; color: var(--gray-500); }
+    .month-body { padding: 12px; }
+    .box-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      border: 1px solid var(--gray-200);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .box-item:hover { border-color: var(--primary); background: var(--primary-light); }
+    .box-item:last-child { margin-bottom: 0; }
+    .box-info { display: flex; align-items: center; gap: 10px; }
+    .box-icon { width: 32px; height: 32px; background: var(--gray-100); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--gray-500); }
+    .box-name { font-size: 13px; font-weight: 500; color: var(--gray-700); }
+    .box-meta { font-size: 11px; color: var(--gray-400); }
+    .box-count { font-size: 12px; color: var(--gray-500); background: var(--gray-100); padding: 4px 8px; border-radius: 4px; }
+
+    /* Detail Panel */
+    .detail-panel {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 400px;
+      height: 100vh;
+      background: #fff;
+      box-shadow: -4px 0 20px rgba(0,0,0,0.1);
+      z-index: 200;
+      transition: right 0.3s ease;
+    }
+    .detail-panel.open { display: block; right: 0; }
+    .detail-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .detail-title { font-size: 16px; font-weight: 600; }
+    .detail-close { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 6px; color: var(--gray-500); }
+    .detail-close:hover { background: var(--gray-100); }
+    .detail-body { padding: 20px; }
+    .detail-section { margin-bottom: 20px; }
+    .detail-label { font-size: 12px; color: var(--gray-500); margin-bottom: 4px; }
+    .detail-value { font-size: 14px; color: var(--gray-800); }
+    .detail-docs { list-style: none; }
+    .detail-docs li {
+      padding: 10px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 13px;
+      color: var(--gray-700);
+      cursor: pointer;
+    }
+    .detail-docs li:hover { background: var(--gray-50); }
+
+    /* Theme Controls */
+    .theme-controls {
+      position: fixed; top: 16px; right: 16px;
+      z-index: 500;
+      display: flex; gap: 8px;
+    }
+    .theme-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 12px; font-weight: 600;
+      color: var(--gray-700);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .theme-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .theme-chip .dot { width: 12px; height: 12px; border-radius: 50%; }
+  </style>
+</head>
+
+<div class="theme-controls">
+  <div class="theme-chip active" onclick="applyPreset('docflow', this)">
+    <span class="dot" style="background:#1a56db"></span> DocFlow
+  </div>
+  <div class="theme-chip" onclick="applyPreset('villarrica', this)">
+    <span class="dot" style="background:#166534"></span> Villarrica
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lampa', this)">
+    <span class="dot" style="background:#7c3aed"></span> Lampa
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lascondes', this)">
+    <span class="dot" style="background:#b91c1c"></span> Las Condes
+  </div>
+</div>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <span class="sidebar-brand-text">DocFlow</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-card">
+        <div class="sidebar-avatar">GM</div>
+        <div>
+          <div class="sidebar-user-name">Giannina Mondino</div>
+          <div class="sidebar-user-dept">Dept. Normativo</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Principal</div>
+        <a class="nav-item" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a class="nav-item" href="#">Bandeja de Entrada</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Sistema</div>
+        <a class="nav-item active" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          <span class="nav-label">Archivadores</span>
+        </a>
+        <a class="nav-item" href="#">Reportes</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-wrapper">
+    <header class="header">
+      <button class="header-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <h1 class="header-title">Archivadores</h1>
+      <div class="header-actions">
+        <button class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva Caja
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- Year Tabs -->
+      <div class="year-tabs">
+        <button class="year-tab active">2026</button>
+        <button class="year-tab">2025</button>
+        <button class="year-tab">2024</button>
+        <button class="year-tab">2023</button>
+        <button class="year-tab">2022</button>
+      </div>
+
+      <!-- Archive Grid -->
+      <div class="archive-grid">
+        <!-- Enero -->
+        <div class="archive-month">
+          <div class="month-header">
+            <span class="month-name">Enero</span>
+            <span class="month-count">3 cajas</span>
+          </div>
+          <div class="month-body">
+            <div class="box-item" onclick="openBox('CAJ-2026-001', 'Enero 2026', 24)">
+              <div class="box-info">
+                <div class="box-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="box-name">CAJ-2026-001</div>
+                  <div class="box-meta">Docs. Ordinarios</div>
+                </div>
+              </div>
+              <span class="box-count">24 docs</span>
+            </div>
+            <div class="box-item" onclick="openBox('CAJ-2026-002', 'Enero 2026', 18)">
+              <div class="box-info">
+                <div class="box-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="box-name">CAJ-2026-002</div>
+                  <div class="box-meta">Memos</div>
+                </div>
+              </div>
+              <span class="box-count">18 docs</span>
+            </div>
+            <div class="box-item" onclick="openBox('CAJ-2026-003', 'Enero 2026', 12)">
+              <div class="box-info">
+                <div class="box-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="box-name">CAJ-2026-003</div>
+                  <div class="box-meta">Oficios</div>
+                </div>
+              </div>
+              <span class="box-count">12 docs</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Febrero -->
+        <div class="archive-month">
+          <div class="month-header">
+            <span class="month-name">Febrero</span>
+            <span class="month-count">2 cajas</span>
+          </div>
+          <div class="month-body">
+            <div class="box-item" onclick="openBox('CAJ-2026-004', 'Febrero 2026', 31)">
+              <div class="box-info">
+                <div class="box-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="box-name">CAJ-2026-004</div>
+                  <div class="box-meta">Docs. Varios</div>
+                </div>
+              </div>
+              <span class="box-count">31 docs</span>
+            </div>
+            <div class="box-item" onclick="openBox('CAJ-2026-005', 'Febrero 2026', 15)">
+              <div class="box-info">
+                <div class="box-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="box-name">CAJ-2026-005</div>
+                  <div class="box-meta">Resoluciones</div>
+                </div>
+              </div>
+              <span class="box-count">15 docs</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Marzo -->
+        <div class="archive-month">
+          <div class="month-header">
+            <span class="month-name">Marzo</span>
+            <span class="month-count">3 cajas</span>
+          </div>
+          <div class="month-body">
+            <div class="box-item" onclick="openBox('CAJ-2026-006', 'Marzo 2026', 28)">
+              <div class="box-info">
+                <div class="box-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="box-name">CAJ-2026-006</div>
+                  <div class="box-meta">Ordinarios</div>
+                </div>
+              </div>
+              <span class="box-count">28 docs</span>
+            </div>
+            <div class="box-item" onclick="openBox('CAJ-2026-007', 'Marzo 2026', 22)">
+              <div class="box-info">
+                <div class="box-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="box-name">CAJ-2026-007</div>
+                  <div class="box-meta">Memos</div>
+                </div>
+              </div>
+              <span class="box-count">22 docs</span>
+            </div>
+            <div class="box-item" onclick="openBox('CAJ-2026-008', 'Marzo 2026', 19)">
+              <div class="box-info">
+                <div class="box-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="box-name">CAJ-2026-008</div>
+                  <div class="box-meta">Despachos</div>
+                </div>
+              </div>
+              <span class="box-count">19 docs</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Abril -->
+        <div class="archive-month">
+          <div class="month-header">
+            <span class="month-name">Abril</span>
+            <span class="month-count">2 cajas</span>
+          </div>
+          <div class="month-body">
+            <div class="box-item" onclick="openBox('CAJ-2026-009', 'Abril 2026', 35)">
+              <div class="box-info">
+                <div class="box-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="box-name">CAJ-2026-009</div>
+                  <div class="box-meta">Docs. Varios</div>
+                </div>
+              </div>
+              <span class="box-count">35 docs</span>
+            </div>
+            <div class="box-item" onclick="openBox('CAJ-2026-010', 'Abril 2026', 8)">
+              <div class="box-info">
+                <div class="box-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="box-name">CAJ-2026-010</div>
+                  <div class="box-meta">Circulares</div>
+                </div>
+              </div>
+              <span class="box-count">8 docs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Panel -->
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+      <span class="detail-title" id="panelTitle">Caja: CAJ-2026-001</span>
+      <button class="detail-close" onclick="closePanel()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-section">
+        <div class="detail-label">Periodo</div>
+        <div class="detail-value" id="panelPeriod">Enero 2026</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Total Documentos</div>
+        <div class="detail-value" id="panelCount">24 documentos</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Ubicacion</div>
+        <div class="detail-value">Estante A-3, Nivel 2</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Documentos</div>
+        <ul class="detail-docs">
+          <li>ORD-001/2026 - Solicitud de permiso</li>
+          <li>ORD-002/2026 - Informe tecnico</li>
+          <li>ORD-003/2026 - Resolucion municipal</li>
+          <li>MEM-001/2026 - Memo interno</li>
+          <li>MEM-002/2026 - Solicitud de informacion</li>
+          <li>... y 19 documentos mas</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const root = document.documentElement;
+  const presets = {
+    docflow: { name: 'DocFlow', primary: '#1a56db', primaryDark: '#1240a8', primaryLight: '#e8effc' },
+    villarrica: { name: 'SGD Villarrica', primary: '#166534', primaryDark: '#14532d', primaryLight: '#f0fdf4' },
+    lampa: { name: 'DocFlow Lampa', primary: '#7c3aed', primaryDark: '#5b21b6', primaryLight: '#f5f3ff' },
+    lascondes: { name: 'GesDoc', primary: '#b91c1c', primaryDark: '#991b1b', primaryLight: '#fef2f2' }
+  };
+  function applyPreset(name, chip) {
+    const p = presets[name];
+    if (!p) return;
+    document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    root.style.setProperty('--primary', p.primary);
+    root.style.setProperty('--primary-dark', p.primaryDark);
+    root.style.setProperty('--primary-light', p.primaryLight);
+    document.querySelector('.sidebar-brand-text').textContent = p.name;
+  }
+
+  function openBox(id, period, count) {
+    document.getElementById('panelTitle').textContent = 'Caja: ' + id;
+    document.getElementById('panelPeriod').textContent = period;
+    document.getElementById('panelCount').textContent = count + ' documentos';
+    document.getElementById('detailPanel').classList.add('open');
+  }
+  function closePanel() {
+    document.getElementById('detailPanel').classList.remove('open');
+  }
+
+  // Year tabs
+  document.querySelectorAll('.year-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.year-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

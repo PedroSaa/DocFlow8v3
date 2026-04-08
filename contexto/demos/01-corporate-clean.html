@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocFlow v3 — Demo 1: Corporate Clean</title>
+<style>
+  :root {
+    --primary: #1a56db;
+    --primary-light: #e8effc;
+    --primary-dark: #1240a8;
+    --success: #0d9f6e;
+    --warning: #e3a008;
+    --danger: #e02424;
+    --info: #3f83f8;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --sidebar-width: 240px;
+    --sidebar-collapsed: 64px;
+    --header-height: 56px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--gray-50); color: var(--gray-800); font-size: 13px; line-height: 1.5; }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0;
+    width: var(--sidebar-width); background: var(--gray-900);
+    color: white; z-index: 100; transition: width 0.2s ease;
+    display: flex; flex-direction: column;
+  }
+  .sidebar.collapsed { width: var(--sidebar-collapsed); }
+  .sidebar-header {
+    height: var(--header-height); display: flex; align-items: center;
+    padding: 0 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
+    gap: 12px;
+  }
+  .sidebar-header .logo { font-size: 18px; font-weight: 700; color: white; letter-spacing: -0.5px; }
+  .sidebar-header .logo span { color: var(--info); }
+  .sidebar .collapse-btn {
+    background: none; border: none; color: var(--gray-400); cursor: pointer;
+    margin-left: auto; font-size: 18px; padding: 4px;
+  }
+  .sidebar .collapse-btn:hover { color: white; }
+  .sidebar-nav { flex: 1; padding: 8px; overflow-y: auto; }
+  .nav-section { margin-bottom: 16px; }
+  .nav-section-title {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--gray-500); padding: 8px 12px 4px; font-weight: 600;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    border-radius: 6px; color: var(--gray-300); text-decoration: none;
+    font-size: 13px; cursor: pointer; transition: all 0.15s;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+  .nav-item.active { background: var(--primary); color: white; }
+  .nav-item .icon { width: 18px; text-align: center; font-size: 15px; flex-shrink: 0; }
+  .nav-item .badge {
+    margin-left: auto; background: var(--danger); color: white;
+    font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 600;
+  }
+  .sidebar-footer {
+    padding: 12px; border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 10px; padding: 8px;
+    border-radius: 8px; cursor: pointer;
+  }
+  .user-card:hover { background: rgba(255,255,255,0.06); }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; flex-shrink: 0;
+  }
+  .user-info .user-name { font-size: 12px; font-weight: 600; color: white; }
+  .user-info .user-role { font-size: 10px; color: var(--gray-400); }
+
+  /* HEADER */
+  .header {
+    position: fixed; top: 0; left: var(--sidebar-width); right: 0;
+    height: var(--header-height); background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex; align-items: center; padding: 0 24px;
+    z-index: 90; transition: left 0.2s ease;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-title { font-size: 15px; font-weight: 600; color: var(--gray-800); }
+  .header-breadcrumb { font-size: 12px; color: var(--gray-400); }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .header-search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--gray-100); border-radius: 6px; padding: 6px 12px;
+    font-size: 12px; color: var(--gray-500); cursor: pointer; border: 1px solid transparent;
+  }
+  .header-search:hover { border-color: var(--gray-300); }
+  .header-search kbd {
+    background: white; border: 1px solid var(--gray-300); border-radius: 3px;
+    padding: 1px 5px; font-size: 10px; font-family: inherit;
+  }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 6px; border: none;
+    background: none; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; color: var(--gray-500); font-size: 16px;
+    position: relative;
+  }
+  .icon-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+  .icon-btn .notif-dot {
+    position: absolute; top: 4px; right: 4px; width: 8px; height: 8px;
+    background: var(--danger); border-radius: 50%; border: 2px solid white;
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    margin-left: var(--sidebar-width); padding-top: var(--header-height);
+    transition: margin-left 0.2s ease;
+  }
+  .content { padding: 24px; }
+
+  /* STATS ROW */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: white; border-radius: 8px; padding: 20px;
+    border: 1px solid var(--gray-200);
+  }
+  .stat-card .stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .stat-card .stat-label { font-size: 12px; color: var(--gray-500); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card .stat-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .stat-card .stat-value { font-size: 28px; font-weight: 700; color: var(--gray-900); }
+  .stat-card .stat-change { font-size: 11px; margin-top: 4px; }
+  .stat-change.up { color: var(--success); }
+  .stat-change.down { color: var(--danger); }
+  .stat-icon.red { background: #fef2f2; color: var(--danger); }
+  .stat-icon.green { background: #f0fdf4; color: var(--success); }
+  .stat-icon.blue { background: var(--primary-light); color: var(--primary); }
+  .stat-icon.yellow { background: #fffbeb; color: var(--warning); }
+
+  /* GRID 2 COLS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .grid-3-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+  /* CARD */
+  .card {
+    background: white; border-radius: 8px; border: 1px solid var(--gray-200);
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--gray-100);
+  }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+  .card-action { font-size: 12px; color: var(--primary); text-decoration: none; cursor: pointer; font-weight: 500; }
+  .card-action:hover { text-decoration: underline; }
+  .card-body { padding: 16px 20px; }
+
+  /* TABLE COMPACT */
+  .table-compact { width: 100%; border-collapse: collapse; }
+  .table-compact th {
+    text-align: left; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--gray-500); padding: 8px 0;
+    border-bottom: 1px solid var(--gray-100); font-weight: 600;
+  }
+  .table-compact td {
+    padding: 10px 0; border-bottom: 1px solid var(--gray-50);
+    font-size: 13px; vertical-align: middle;
+  }
+  .table-compact tr:last-child td { border-bottom: none; }
+
+  /* BADGES */
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-danger { background: #fef2f2; color: var(--danger); }
+  .badge-warning { background: #fffbeb; color: #92400e; }
+  .badge-success { background: #f0fdf4; color: #166534; }
+  .badge-info { background: var(--primary-light); color: var(--primary); }
+  .badge-gray { background: var(--gray-100); color: var(--gray-600); }
+
+  /* PRIORITY DOT */
+  .priority-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .priority-dot.high { background: var(--danger); }
+  .priority-dot.medium { background: var(--warning); }
+  .priority-dot.low { background: var(--success); }
+
+  /* PROGRESS BAR */
+  .progress-bar { height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
+  /* ACTIVITY ITEM */
+  .activity-item { display: flex; gap: 12px; padding: 10px 0; }
+  .activity-item:not(:last-child) { border-bottom: 1px solid var(--gray-50); }
+  .activity-dot {
+    width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+  }
+  .activity-content { flex: 1; }
+  .activity-text { font-size: 12px; color: var(--gray-700); }
+  .activity-text strong { color: var(--gray-900); }
+  .activity-time { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+  /* STYLE LABEL */
+  .demo-label {
+    background: var(--primary); color: white; text-align: center;
+    padding: 10px; font-size: 14px; font-weight: 600; letter-spacing: 0.5px;
+  }
+  .demo-sublabel { background: var(--primary-light); color: var(--primary); text-align: center; padding: 6px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="demo-label">DEMO 1: CORPORATE CLEAN — Sidebar Colapsable — Densidad Compacta</div>
+<div class="demo-sublabel">Profesional, sobrio, mucha informacion visible. Estilo Microsoft 365 / SAP Fiori</div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">Doc<span>Flow</span></div>
+    <button class="collapse-btn">☰</button>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-title">Principal</div>
+      <a class="nav-item active"><span class="icon">📊</span> Dashboard</a>
+      <a class="nav-item"><span class="icon">📥</span> Bandeja de entrada <span class="badge">12</span></a>
+      <a class="nav-item"><span class="icon">📤</span> Bandeja de salida</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Documentos</div>
+      <a class="nav-item"><span class="icon">📝</span> Registro</a>
+      <a class="nav-item"><span class="icon">🔍</span> Consulta</a>
+      <a class="nav-item"><span class="icon">📁</span> Expedientes <span class="badge">3</span></a>
+      <a class="nav-item"><span class="icon">🗄️</span> Archivadores</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Gestion</div>
+      <a class="nav-item"><span class="icon">✅</span> Tareas</a>
+      <a class="nav-item"><span class="icon">✍️</span> Firma digital</a>
+      <a class="nav-item"><span class="icon">📊</span> Reportes</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Admin</div>
+      <a class="nav-item"><span class="icon">👥</span> Usuarios</a>
+      <a class="nav-item"><span class="icon">🏢</span> Departamentos</a>
+      <a class="nav-item"><span class="icon">⚙️</span> Configuracion</a>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">GM</div>
+      <div class="user-info">
+        <div class="user-name">Giannina Mondino</div>
+        <div class="user-role">Depto. Normativo · Admin</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="header-title">Dashboard</div>
+    <div class="header-breadcrumb">Depto. Normativo — Lunes 7 Abril, 2026</div>
+  </div>
+  <div class="header-right">
+    <div class="header-search">🔍 Buscar documentos... <kbd>Ctrl+K</kbd></div>
+    <button class="icon-btn">🔔<span class="notif-dot"></span></button>
+    <button class="icon-btn">❓</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-label">Pendientes Respuesta</div>
+          <div class="stat-icon red">📄</div>
+        </div>
+        <div class="stat-value">8</div>
+        <div class="stat-change down">↑ 3 desde ayer</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-label">Tareas por Ejecutar</div>
+          <div class="stat-icon green">✅</div>
+        </div>
+        <div class="stat-value">5</div>
+        <div class="stat-change up">↓ 2 desde ayer</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-label">Docs. No Leidos</div>
+          <div class="stat-icon blue">📬</div>
+        </div>
+        <div class="stat-value">3</div>
+        <div class="stat-change up">Sin cambios</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-label">V°B° Pendientes</div>
+          <div class="stat-icon yellow">✍️</div>
+        </div>
+        <div class="stat-value">2</div>
+        <div class="stat-change down">↑ 1 nuevo</div>
+      </div>
+    </div>
+
+    <!-- GRID: DOCUMENTOS URGENTES + ACTIVIDAD -->
+    <div class="grid-3-1">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 Documentos que requieren atencion</div>
+          <a class="card-action">Ver todos →</a>
+        </div>
+        <div class="card-body">
+          <table class="table-compact">
+            <thead>
+              <tr>
+                <th>Correlativo</th>
+                <th>Tipo</th>
+                <th>Materia</th>
+                <th>Origen</th>
+                <th>Vencimiento</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong style="color:var(--primary)">#9645</strong></td>
+                <td>Oficio</td>
+                <td>Respuesta Contraloria Reg.</td>
+                <td>Secretaria Municipal</td>
+                <td><span class="badge badge-danger">Hoy</span></td>
+                <td><span class="badge badge-warning">Pendiente</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--primary)">#9638</strong></td>
+                <td>Decreto</td>
+                <td>Pago factura servicio aseo</td>
+                <td>DAF</td>
+                <td><span class="badge badge-danger">Vencido (2d)</span></td>
+                <td><span class="badge badge-danger">Urgente</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--primary)">#9632</strong></td>
+                <td>Apelacion</td>
+                <td>Recurso administrativo</td>
+                <td>Depto. Normativo</td>
+                <td><span class="badge badge-warning">3 dias</span></td>
+                <td><span class="badge badge-info">En revision</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--primary)">#9628</strong></td>
+                <td>Memo</td>
+                <td>Solicitud feriado legal</td>
+                <td>RRHH</td>
+                <td><span class="badge badge-gray">7 dias</span></td>
+                <td><span class="badge badge-success">Recibido</span></td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--primary)">#9625</strong></td>
+                <td>Carta</td>
+                <td>Convenio colaboracion</td>
+                <td>Alcaldia</td>
+                <td><span class="badge badge-gray">10 dias</span></td>
+                <td><span class="badge badge-info">Por firmar</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🕐 Actividad reciente</div>
+          <a class="card-action">Ver todo →</a>
+        </div>
+        <div class="card-body">
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--success)"></div>
+            <div class="activity-content">
+              <div class="activity-text"><strong>Patricia Gonzalez</strong> firmo el decreto #9640</div>
+              <div class="activity-time">Hace 15 min</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--primary)"></div>
+            <div class="activity-content">
+              <div class="activity-text"><strong>Manuel Rodriguez</strong> te envio un oficio</div>
+              <div class="activity-time">Hace 1 hora</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--warning)"></div>
+            <div class="activity-content">
+              <div class="activity-text">V°B° solicitado en <strong>Decreto #9638</strong></div>
+              <div class="activity-time">Hace 2 horas</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--danger)"></div>
+            <div class="activity-content">
+              <div class="activity-text"><strong>Expediente Exp-104</strong> vencio</div>
+              <div class="activity-time">Ayer, 17:30</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--info)"></div>
+            <div class="activity-content">
+              <div class="activity-text"><strong>Alcaldia</strong> archivo 3 documentos</div>
+              <div class="activity-time">Ayer, 14:00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRID: TAREAS + EXPEDIENTES -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">✅ Mis Tareas pendientes</div>
+          <a class="card-action">Ver todas →</a>
+        </div>
+        <div class="card-body">
+          <table class="table-compact">
+            <thead>
+              <tr><th>Tarea</th><th>Documento</th><th>Responsable</th><th>Fecha</th><th>Prioridad</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Revisar y visar decreto</td>
+                <td><strong style="color:var(--primary)">#9638</strong></td>
+                <td>Giannina M.</td>
+                <td>07/04</td>
+                <td><span class="priority-dot high"></span>Alta</td>
+              </tr>
+              <tr>
+                <td>Redactar respuesta oficio</td>
+                <td><strong style="color:var(--primary)">#9645</strong></td>
+                <td>Giannina M.</td>
+                <td>07/04</td>
+                <td><span class="priority-dot high"></span>Alta</td>
+              </tr>
+              <tr>
+                <td>Clasificar correspondencia</td>
+                <td><strong style="color:var(--primary)">#9650</strong></td>
+                <td>Giannina M.</td>
+                <td>08/04</td>
+                <td><span class="priority-dot medium"></span>Media</td>
+              </tr>
+              <tr>
+                <td>Archivar expediente</td>
+                <td><strong style="color:var(--primary)">Exp-098</strong></td>
+                <td>Giannina M.</td>
+                <td>10/04</td>
+                <td><span class="priority-dot low"></span>Baja</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📁 Expedientes activos</div>
+          <a class="card-action">Ver todos →</a>
+        </div>
+        <div class="card-body">
+          <table class="table-compact">
+            <thead>
+              <tr><th>Expediente</th><th>Estado</th><th>Docs</th><th>Vencimiento</th><th>Progreso</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong style="color:var(--primary)">Licitacion Aseo</strong></td>
+                <td><span class="badge badge-warning">En proceso</span></td>
+                <td>12</td>
+                <td>15/04</td>
+                <td><div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:75%;background:var(--primary)"></div></div></td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--primary)">Convenio Salud</strong></td>
+                <td><span class="badge badge-info">En revision</span></td>
+                <td>8</td>
+                <td>20/04</td>
+                <td><div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:50%;background:var(--warning)"></div></div></td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--primary)">Subsidios Q1</strong></td>
+                <td><span class="badge badge-danger">Vencido</span></td>
+                <td>23</td>
+                <td>01/04</td>
+                <td><div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:90%;background:var(--danger)"></div></div></td>
+              </tr>
+              <tr>
+                <td><strong style="color:var(--primary)">Personal Marzo</strong></td>
+                <td><span class="badge badge-success">Completo</span></td>
+                <td>15</td>
+                <td>31/03</td>
+                <td><div class="progress-bar" style="width:80px"><div class="progress-fill" style="width:100%;background:var(--success)"></div></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocFlow v3 — Expedientes</title>
+<style>
+  :root {
+    --primary: #1a56db;
+    --primary-light: #e8effc;
+    --primary-dark: #1240a8;
+    --primary-rgb: 26, 86, 219;
+    --success: #0d9f6e;
+    --warning: #e3a008;
+    --danger: #e02424;
+    --danger-light: #fef2f2;
+    --info: #3f83f8;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --sidebar-width: 260px;
+    --sidebar-collapsed: 72px;
+    --header-height: 64px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--gray-50); color: var(--gray-800);
+    font-size: 14px; line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .app-layout { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--gray-900);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    bottom: 0;
+    z-index: 100;
+    transition: width 0.25s ease;
+    overflow: hidden;
+  }
+  .sidebar.collapsed { width: var(--sidebar-collapsed); }
+  .sidebar.collapsed .sidebar-brand-text, .sidebar.collapsed .nav-label, .sidebar.collapsed .nav-badge, .sidebar.collapsed .sidebar-footer-text { opacity: 0; width: 0; overflow: hidden; }
+  .sidebar.collapsed .nav-icon { margin: 0 auto; }
+
+  .sidebar-brand { height: var(--header-height); display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid rgba(255,255,255,0.08); gap: 12px; }
+  .sidebar-logo { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .sidebar-brand-text { font-size: 16px; font-weight: 700; white-space: nowrap; }
+  .sidebar-user { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; }
+  .sidebar-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
+  .sidebar-user-name { font-size: 13px; font-weight: 600; }
+  .sidebar-user-dept { font-size: 11px; color: var(--gray-400); }
+
+  .sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .sidebar-section { padding: 8px 12px; }
+  .sidebar-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-500); padding: 8px 8px 4px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--gray-300); text-decoration: none; border-radius: 8px; cursor: pointer; transition: all 0.15s; margin: 2px 8px; }
+  .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .nav-item.active { background: var(--primary); color: #fff; }
+  .nav-icon { width: 20px; height: 20px; flex-shrink: 0; }
+  .nav-label { flex: 1; font-size: 13px; white-space: nowrap; }
+  .nav-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--danger); color: #fff; font-weight: 600; }
+  .nav-nested { display: none; }
+  .nav-nested.show { display: block; }
+  .nav-nested .nav-item { padding-left: 44px; font-size: 12px; }
+  .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-footer-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; background: none; border: none; color: var(--gray-400); font-size: 13px; cursor: pointer; border-radius: 8px; font-family: inherit; }
+  .sidebar-footer-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+  /* MAIN */
+  .main-wrapper { flex: 1; margin-left: var(--sidebar-width); transition: margin-left 0.25s ease; display: flex; flex-direction: column; min-height: 100vh; }
+  .sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-collapsed); }
+
+  .header { height: var(--header-height); background: #fff; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; padding: 0 24px; gap: 16px; position: sticky; top: 0; z-index: 50; }
+  .header-toggle { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 8px; color: var(--gray-600); }
+  .header-toggle:hover { background: var(--gray-100); }
+  .header-title { font-size: 18px; font-weight: 600; }
+  .header-actions { margin-left: auto; display: flex; gap: 8px; }
+  .header-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 8px; color: var(--gray-500); position: relative; }
+  .header-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+
+  /* CONTENT */
+  .content-area { flex: 1; display: flex; overflow: hidden; }
+
+  /* LIST VIEW */
+  .exp-list { width: 400px; background: #fff; border-right: 1px solid var(--gray-200); display: flex; flex-direction: column; }
+  .exp-list-header { padding: 16px; border-bottom: 1px solid var(--gray-200); }
+  .exp-list-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+  .exp-list-filters { display: flex; gap: 8px; }
+  .exp-search { flex: 1; padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 13px; }
+  .exp-search:focus { outline: none; border-color: var(--primary); }
+
+  .exp-list-body { flex: 1; overflow-y: auto; }
+  .exp-item { padding: 16px; border-bottom: 1px solid var(--gray-100); cursor: pointer; transition: background 0.15s; }
+  .exp-item:hover { background: var(--gray-50); }
+  .exp-item.active { background: var(--primary-light); border-left: 3px solid var(--primary); }
+  .exp-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .exp-num { font-size: 13px; font-weight: 600; color: var(--primary); }
+  .exp-status { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+  .exp-status.closed { background: var(--gray-100); color: var(--gray-600); }
+  .exp-status.review { background: var(--warning); color: white; }
+  .exp-status.active { background: var(--success); color: white; }
+  .exp-name { font-size: 14px; font-weight: 500; color: var(--gray-800); margin-bottom: 4px; }
+  .exp-meta { font-size: 12px; color: var(--gray-500); }
+  .exp-venc { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin-top: 8px; }
+  .exp-venc.green { background: #ecfdf5; color: #047857; }
+  .exp-venc.red { background: var(--danger-light); color: var(--danger); }
+
+  /* DETAIL VIEW */
+  .exp-detail { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .exp-detail-header { padding: 16px 24px; background: #fff; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; }
+  .exp-detail-title { font-size: 18px; font-weight: 600; }
+  .exp-detail-meta { display: flex; gap: 16px; margin-top: 4px; }
+  .exp-detail-meta-item { font-size: 12px; color: var(--gray-500); }
+  .exp-detail-actions { display: flex; gap: 8px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: inherit; border: none; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary { background: white; border: 1px solid var(--gray-300); color: var(--gray-700); }
+  .btn-secondary:hover { background: var(--gray-50); }
+  .btn-danger { background: white; border: 1px solid var(--danger); color: var(--danger); }
+  .btn-danger:hover { background: var(--danger-light); }
+
+  /* TABS */
+  .exp-tabs { display: flex; background: #fff; border-bottom: 1px solid var(--gray-200); padding: 0 24px; }
+  .exp-tab { padding: 14px 20px; border: none; background: none; font-size: 13px; font-weight: 500; color: var(--gray-500); cursor: pointer; position: relative; font-family: inherit; }
+  .exp-tab:hover { color: var(--gray-700); }
+  .exp-tab.active { color: var(--primary); }
+  .exp-tab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--primary); }
+
+  .exp-tabs-content { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* TAB: CARPETAS */
+  .carpetas-list { display: flex; flex-direction: column; gap: 8px; }
+  .carpeta-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: white; border: 1px solid var(--gray-200); border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+  .carpeta-item:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .carpeta-icon { width: 36px; height: 36px; background: var(--primary-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+  .carpeta-info { flex: 1; }
+  .carpeta-name { font-weight: 500; }
+  .carpeta-meta { font-size: 12px; color: var(--gray-500); }
+  .carpeta-count { font-size: 12px; color: var(--gray-500); }
+  .add-carpeta-btn { display: flex; align-items: center; gap: 8px; padding: 12px; border: 2px dashed var(--gray-300); border-radius: 8px; background: none; color: var(--gray-500); font-size: 13px; cursor: pointer; font-family: inherit; justify-content: center; transition: all 0.15s; }
+  .add-carpeta-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* TAB: LISTA DE CONTROL */
+  .checklist-progress { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+  .progress-bar { flex: 1; height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s; }
+  .progress-text { font-size: 14px; font-weight: 600; color: var(--gray-700); }
+  .checklist-items { display: flex; flex-direction: column; gap: 8px; }
+  .check-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: white; border: 1px solid var(--gray-200); border-radius: 8px; }
+  .check-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
+  .check-item-text { flex: 1; font-size: 14px; }
+  .check-item.completed .check-item-text { text-decoration: line-through; color: var(--gray-500); }
+  .check-item-delete { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: none; color: var(--gray-400); cursor: pointer; border-radius: 6px; }
+  .check-item-delete:hover { background: var(--danger-light); color: var(--danger); }
+  .add-check-input { display: flex; gap: 8px; margin-top: 12px; }
+  .add-check-input input { flex: 1; padding: 10px 14px; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 13px; }
+  .add-check-input input:focus { outline: none; border-color: var(--primary); }
+
+  /* TAB: VENCIMIENTO */
+  .venc-section { background: white; border: 1px solid var(--gray-200); border-radius: 8px; padding: 20px; }
+  .venc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .venc-label { font-weight: 500; }
+  .venc-badge { font-size: 11px; padding: 4px 10px; border-radius: 6px; }
+  .venc-badge.vigente { background: #ecfdf5; color: #047857; }
+  .venc-badge.vencido { background: var(--danger-light); color: var(--danger); }
+  .venc-date { display: flex; gap: 12px; align-items: center; }
+  .venc-date input { padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 13px; }
+
+  /* TAB: DOCUMENTOS */
+  .exp-docs-list { display: flex; flex-direction: column; gap: 8px; }
+  .exp-doc-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: white; border: 1px solid var(--gray-200); border-radius: 8px; cursor: pointer; }
+  .exp-doc-item:hover { border-color: var(--primary); }
+  .exp-doc-icon { width: 36px; height: 36px; background: var(--primary-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+  .exp-doc-info { flex: 1; }
+  .exp-doc-name { font-weight: 500; }
+  .exp-doc-meta { font-size: 12px; color: var(--gray-500); }
+  .exp-doc-actions { display: flex; gap: 4px; }
+
+  /* TAB: OBSERVACIONES */
+  .obs-list { display: flex; flex-direction: column; gap: 12px; }
+  .obs-item { display: flex; gap: 12px; padding: 16px; background: white; border: 1px solid var(--gray-200); border-radius: 8px; }
+  .obs-avatar { width: 36px; height: 36px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .obs-content { flex: 1; }
+  .obs-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .obs-author { font-weight: 500; font-size: 13px; }
+  .obs-date { font-size: 11px; color: var(--gray-500); }
+  .obs-text { font-size: 13px; color: var(--gray-700); }
+  .obs-actions { display: flex; gap: 8px; margin-top: 8px; }
+  .obs-action-btn { font-size: 12px; color: var(--gray-500); background: none; border: none; cursor: pointer; font-family: inherit; }
+  .obs-action-btn:hover { color: var(--primary); }
+  .add-obs-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border: 2px dashed var(--gray-300); border-radius: 8px; background: none; color: var(--gray-500); font-size: 13px; cursor: pointer; font-family: inherit; }
+  .add-obs-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--gray-800); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 10px; opacity: 0; transition: all 0.3s ease; z-index: 1000; }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { background: var(--success); }
+
+  /* THEME CONTROLS */
+  .theme-controls { position: fixed; top: 16px; right: 16px; z-index: 500; display: flex; gap: 8px; }
+  .theme-chip { display: flex; align-items: center; gap: 6px; padding: 8px 14px; background: white; border: 1px solid var(--gray-200); border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--gray-700); cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .theme-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .theme-chip .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); }
+</style>
+</head>
+
+<!-- THEME PRESETS -->
+<div class="theme-controls">
+  <div class="theme-chip active" onclick="applyPreset('docflow', this)">
+    <span class="dot" style="background:#1a56db"></span> DocFlow
+  </div>
+  <div class="theme-chip" onclick="applyPreset('villarrica', this)">
+    <span class="dot" style="background:#166534"></span> Villarrica
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lampa', this)">
+    <span class="dot" style="background:#7c3aed"></span> Lampa
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lascondes', this)">
+    <span class="dot" style="background:#b91c1c"></span> Las Condes
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastIcon">✓</span>
+  <span id="toastMsg">Operacion exitosa</span>
+</div>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <span class="sidebar-brand-text" id="sidebarBrand">DocFlow</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-card">
+        <div class="sidebar-avatar">GM</div>
+        <div><div class="sidebar-user-name">Giannina Mondino</div><div class="sidebar-user-dept">Dept. Normativo</div></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Principal</div>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="nav-label">Dashboard</span></a>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span class="nav-label">Bandeja de Entrada</span><span class="nav-badge">12</span></a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Expedientes</div>
+        <a class="nav-item active has-nested" onclick="toggleNested(this)"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span class="nav-label">Expedientes</span></a>
+        <div class="nav-nested show">
+          <a class="nav-item active" href="#">Mis Expedientes</a>
+          <a class="nav-item" href="#">Compartido conmigo</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Documentos</div>
+        <a class="nav-item has-nested" onclick="toggleNested(this)"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg><span class="nav-label">Registro</span></a>
+        <div class="nav-nested"><a class="nav-item" href="#">Registrar Doc. Recibido</a><a class="nav-item" href="#">Crear Doc. Interno</a></div>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span class="nav-label">Consulta Documentos</span></a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Sistema</div>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg><span class="nav-label">Archivadores</span></a>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="nav-label">Reportes</span></a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-footer-btn" onclick="toggleSidebar()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg><span class="sidebar-footer-text">Colapsar menu</span></button>
+      <button class="sidebar-footer-btn" onclick="alert('Cerrar sesion')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span class="sidebar-footer-text">Cerrar sesion</span></button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-wrapper">
+    <header class="header">
+      <button class="header-toggle" onclick="toggleSidebar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <h1 class="header-title">Mis Expedientes</h1>
+      <div class="header-actions">
+        <button class="header-btn" onclick="showToast('Creando expediente...', 'success')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <!-- LISTA DE EXPEDIENTES -->
+      <div class="exp-list">
+        <div class="exp-list-header">
+          <div class="exp-list-title">Expedientes</div>
+          <div class="exp-list-filters">
+            <input type="text" class="exp-search" placeholder="Buscar expediente...">
+          </div>
+        </div>
+        <div class="exp-list-body">
+          <div class="exp-item active" onclick="selectExp(this, 'exp1')">
+            <div class="exp-item-header">
+              <span class="exp-num">Exp-1049244379</span>
+              <span class="exp-status closed">Cerrado</span>
+            </div>
+            <div class="exp-name">Recurso de apelacion - Permiso construccion</div>
+            <div class="exp-meta">Creado: 15/03/2026 · Autor: Oficina de Partes</div>
+            <div class="exp-venc green">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Vence: 30/06/2026
+            </div>
+          </div>
+          <div class="exp-item" onclick="selectExp(this, 'exp2')">
+            <div class="exp-item-header">
+              <span class="exp-num">Exp-7f7e6aa72db</span>
+              <span class="exp-status review">Por Revisar</span>
+            </div>
+            <div class="exp-name">prueba dos</div>
+            <div class="exp-meta">Creado: 05/04/2026 · Autor: Giannina Mondino</div>
+            <div class="exp-venc red">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Vencio: 01/04/2026
+            </div>
+          </div>
+          <div class="exp-item" onclick="selectExp(this, 'exp3')">
+            <div class="exp-item-header">
+              <span class="exp-num">Exp-89234abc123</span>
+              <span class="exp-status active">Activo</span>
+            </div>
+            <div class="exp-name">Solicitud de antecedentes - Direccion de Obras</div>
+            <div class="exp-meta">Creado: 20/03/2026 · Autor: Secretaria Municipal</div>
+            <div class="exp-venc green">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Vence: 15/05/2026
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DETALLE DEL EXPEDIENTE -->
+      <div class="exp-detail">
+        <div class="exp-detail-header">
+          <div>
+            <div class="exp-detail-title">Exp-1049244379</div>
+            <div class="exp-detail-meta">
+              <span class="exp-detail-meta-item">Creacion: 15/03/2026</span>
+              <span class="exp-detail-meta-item">Estado: <strong>Cerrado</strong></span>
+              <span class="exp-detail-meta-item">Autor: Oficina de Partes</span>
+            </div>
+          </div>
+          <div class="exp-detail-actions">
+            <button class="btn btn-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Modificar
+            </button>
+            <button class="btn btn-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Compartir
+            </button>
+            <button class="btn btn-danger">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Eliminar
+            </button>
+          </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="exp-tabs">
+          <button class="exp-tab active" onclick="selectExpTab(this, 'carpetas')">Carpetas</button>
+          <button class="exp-tab" onclick="selectExpTab(this, 'lista')">Lista de Control</button>
+          <button class="exp-tab" onclick="selectExpTab(this, 'vencimiento')">Vencimiento</button>
+          <button class="exp-tab" onclick="selectExpTab(this, 'documentos')">Documento</button>
+          <button class="exp-tab" onclick="selectExpTab(this, 'observaciones')">Observaciones</button>
+          <button class="exp-tab" onclick="selectExpTab(this, 'referencias')">Referencias</button>
+          <button class="exp-tab" onclick="selectExpTab(this, 'compartir')">Compartir</button>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="exp-tabs-content">
+          <!-- TAB: CARPETAS -->
+          <div class="tab-content active" id="tab-carpetas">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+              <button class="btn btn-primary" onclick="alert('Crear carpeta')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Crear Carpeta
+              </button>
+            </div>
+            <div class="carpetas-list">
+              <div class="carpeta-item" onclick="alert('Ver carpeta: Apelacion')">
+                <div class="carpeta-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div class="carpeta-info">
+                  <div class="carpeta-name">Apelacion</div>
+                  <div class="carpeta-meta">Orden: 1 · Creado: 15/03/2026</div>
+                </div>
+                <div class="carpeta-count">3 documentos</div>
+              </div>
+              <button class="add-carpeta-btn" onclick="alert('Crear nueva carpeta')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Agregar carpeta
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB: LISTA DE CONTROL -->
+          <div class="tab-content" id="tab-lista">
+            <div class="checklist-progress">
+              <div class="progress-bar"><div class="progress-fill" style="width: 66%;"></div></div>
+              <span class="progress-text">66% (4 de 6)</span>
+            </div>
+            <div class="checklist-items">
+              <div class="check-item">
+                <input type="checkbox" checked onchange="updateProgress()">
+                <span class="check-item-text">Revisar expediente completo</span>
+                <button class="check-item-delete" onclick="alert('Eliminar item')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+              </div>
+              <div class="check-item">
+                <input type="checkbox" checked onchange="updateProgress()">
+                <span class="check-item-text">Solicitar informe a juridico</span>
+                <button class="check-item-delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+              </div>
+              <div class="check-item">
+                <input type="checkbox" checked onchange="updateProgress()">
+                <span class="check-item-text">Elaborar respuesta al recurrente</span>
+                <button class="check-item-delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+              </div>
+              <div class="check-item">
+                <input type="checkbox" checked onchange="updateProgress()">
+                <span class="check-item-text">Obtener Visto Bueno del Director</span>
+                <button class="check-item-delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+              </div>
+              <div class="check-item">
+                <input type="checkbox" onchange="updateProgress()">
+                <span class="check-item-text">Notificar al interesado</span>
+                <button class="check-item-delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+              </div>
+              <div class="check-item">
+                <input type="checkbox" onchange="updateProgress()">
+                <span class="check-item-text">Archivar expediente</span>
+                <button class="check-item-delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+              </div>
+            </div>
+            <div class="add-check-input">
+              <input type="text" placeholder="Añada un elemento..." id="newCheckItem">
+              <button class="btn btn-primary" onclick="addCheckItem()">Añadir</button>
+            </div>
+          </div>
+
+          <!-- TAB: VENCIMIENTO -->
+          <div class="tab-content" id="tab-vencimiento">
+            <div class="venc-section">
+              <div class="venc-header">
+                <span class="venc-label">Fecha de Vencimiento</span>
+                <span class="venc-badge vigente">Vigente</span>
+              </div>
+              <div class="venc-date">
+                <span style="font-size: 13px; color: var(--gray-600);">Fecha:</span>
+                <input type="date" value="2026-06-30">
+                <button class="btn btn-secondary" onclick="alert('Quitar vencimiento')">Quitar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: DOCUMENTOS -->
+          <div class="tab-content" id="tab-documentos">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+              <button class="btn btn-primary" onclick="alert('Asociar documento')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Asociar Documento
+              </button>
+            </div>
+            <div class="exp-docs-list">
+              <div class="exp-doc-item" onclick="alert('Ver documento')">
+                <div class="exp-doc-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                </div>
+                <div class="exp-doc-info">
+                  <div class="exp-doc-name">APELACION</div>
+                  <div class="exp-doc-meta">Tipo: Interno · Fecha: 15/03/2026 · N°: 9631</div>
+                </div>
+                <div class="exp-doc-actions">
+                  <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;">Ver</button>
+                </div>
+              </div>
+              <div class="exp-doc-item">
+                <div class="exp-doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+                <div class="exp-doc-info"><div class="exp-doc-name">BOLETA</div><div class="exp-doc-meta">Tipo: Recibido · Fecha: 16/03/2026</div></div>
+                <div class="exp-doc-actions"><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;">Ver</button></div>
+              </div>
+              <div class="exp-doc-item">
+                <div class="exp-doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div>
+                <div class="exp-doc-info"><div class="exp-doc-name">CARTA</div><div class="exp-doc-meta">Tipo: Externo · Fecha: 17/03/2026</div></div>
+                <div class="exp-doc-actions"><button class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px;">Ver</button></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: OBSERVACIONES -->
+          <div class="tab-content" id="tab-observaciones">
+            <div class="obs-list">
+              <div class="obs-item">
+                <div class="obs-avatar">GM</div>
+                <div class="obs-content">
+                  <div class="obs-header">
+                    <span class="obs-author">Giannina Mondino</span>
+                    <span class="obs-date">07/04/2026 10:30</span>
+                  </div>
+                  <div class="obs-text">Se revisaron los antecedentes y se solicita informe juridico.</div>
+                  <div class="obs-actions">
+                    <button class="obs-action-btn">Editar</button>
+                    <button class="obs-action-btn">Eliminar</button>
+                  </div>
+                </div>
+              </div>
+              <div class="obs-item">
+                <div class="obs-avatar" style="background: var(--gray-600);">OP</div>
+                <div class="obs-content">
+                  <div class="obs-header">
+                    <span class="obs-author">Oficina de Partes</span>
+                    <span class="obs-date">15/03/2026 09:00</span>
+                  </div>
+                  <div class="obs-text">Expediente creado a partir de recurso de apelacion presentado por el ciudadano.</div>
+                  <div class="obs-actions">
+                    <button class="obs-action-btn">Editar</button>
+                    <button class="obs-action-btn">Eliminar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="add-obs-btn" onclick="alert('Agregar observacion')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Agregar observacion
+            </button>
+          </div>
+
+          <!-- TAB: REFERENCIAS -->
+          <div class="tab-content" id="tab-referencias">
+            <div style="text-align: center; color: var(--gray-500); padding: 40px;">
+              No hay referencias asociadas a este expediente
+            </div>
+          </div>
+
+          <!-- TAB: COMPARTIR -->
+          <div class="tab-content" id="tab-compartir">
+            <div style="text-align: center; color: var(--gray-500); padding: 40px;">
+              Este expediente no ha sido compartido con otros usuarios
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const root = document.documentElement;
+const presets = {
+  docflow: { name: 'DocFlow', primary: '#1a56db', primaryDark: '#1240a8', primaryLight: '#e8effc', primaryRgb: '26, 86, 219' },
+  villarrica: { name: 'SGD Villarrica', primary: '#166534', primaryDark: '#14532d', primaryLight: '#f0fdf4', primaryRgb: '22, 101, 52' },
+  lampa: { name: 'DocFlow Lampa', primary: '#7c3aed', primaryDark: '#5b21b6', primaryLight: '#f5f3ff', primaryRgb: '124, 58, 237' },
+  lascondes: { name: 'GesDoc', primary: '#b91c1c', primaryDark: '#991b1b', primaryLight: '#fef2f2', primaryRgb: '185, 28, 28' }
+};
+
+function applyPreset(name, chip) {
+  const p = presets[name];
+  if (!p) return;
+  if (chip) { document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('active')); chip.classList.add('active'); }
+  root.style.setProperty('--primary', p.primary);
+  root.style.setProperty('--primary-dark', p.primaryDark);
+  root.style.setProperty('--primary-light', p.primaryLight);
+  root.style.setProperty('--primary-rgb', p.primaryRgb);
+  document.getElementById('sidebarBrand').textContent = p.name;
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+function toggleNested(el) { el.classList.toggle('expanded'); const next = el.nextElementSibling; if (next && next.classList.contains('nav-nested')) { next.classList.toggle('show'); } }
+
+function selectExp(btn, expId) {
+  document.querySelectorAll('.exp-item').forEach(e => e.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function selectExpTab(btn, tabId) {
+  document.querySelectorAll('.exp-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+}
+
+function updateProgress() {
+  const checkboxes = document.querySelectorAll('#tab-lista .check-item input[type="checkbox"]');
+  const checked = Array.from(checkboxes).filter(c => c.checked).length;
+  const total = checkboxes.length;
+  const percent = Math.round((checked / total) * 100);
+  document.querySelector('.progress-fill').style.width = percent + '%';
+  document.querySelector('.progress-text').textContent = percent + '% (' + checked + ' de ' + total + ')';
+  showToast('Progreso actualizado', 'success');
+}
+
+function addCheckItem() {
+  const input = document.getElementById('newCheckItem');
+  if (!input.value.trim()) return;
+  const container = document.querySelector('.checklist-items');
+  const newItem = document.createElement('div');
+  newItem.className = 'check-item';
+  newItem.innerHTML = '<input type="checkbox" onchange="updateProgress()"><span class="check-item-text">' + input.value + '</span><button class="check-item-delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>';
+  container.appendChild(newItem);
+  input.value = '';
+  updateProgress();
+}
+
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').textContent = type === 'success' ? '✓' : '✕';
+  toast.className = 'toast ' + type + ' show';
+  setTimeout(() => { toast.classList.remove('show'); }, 3000);
+}
+</script>
+</body>
+</html>

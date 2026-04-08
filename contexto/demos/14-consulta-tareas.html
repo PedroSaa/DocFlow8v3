@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocFlow v3 — Consulta Tareas</title>
+  <style>
+    :root {
+      --primary: #1a56db;
+      --primary-light: #e8effc;
+      --primary-dark: #1240a8;
+      --success: #0d9f6e;
+      --warning: #e3a008;
+      --danger: #e02424;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --sidebar-width: 260px;
+      --header-height: 64px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--gray-50); color: var(--gray-800);
+      font-size: 14px;
+    }
+    .app-layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--gray-900);
+      color: #fff;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-brand { height: var(--header-height); display: flex; align-items: center; padding: 0 16px; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-logo { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-brand-text { font-size: 16px; font-weight: 700; }
+    .sidebar-user { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-user-card { display: flex; align-items: center; gap: 12px; }
+    .sidebar-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .sidebar-user-name { font-size: 13px; font-weight: 600; }
+    .sidebar-user-dept { font-size: 11px; color: var(--gray-400); }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+    .sidebar-section { padding: 8px 12px; }
+    .sidebar-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--gray-500); padding: 8px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--gray-300); border-radius: 8px; cursor: pointer; text-decoration: none; }
+    .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .nav-item.active { background: var(--primary); color: #fff; }
+    .nav-icon { width: 20px; height: 20px; }
+    .nav-label { flex: 1; font-size: 13px; }
+    .nav-nested { display: none; padding-left: 20px; }
+    .nav-nested.show { display: block; }
+
+    /* Main */
+    .main-wrapper { flex: 1; margin-left: var(--sidebar-width); }
+    .header { height: var(--header-height); background: #fff; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; padding: 0 24px; gap: 16px; }
+    .header-toggle { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 8px; color: var(--gray-600); }
+    .header-toggle:hover { background: var(--gray-100); }
+    .header-title { font-size: 18px; font-weight: 600; }
+    .header-actions { margin-left: auto; display: flex; gap: 8px; }
+
+    /* Content */
+    .content { padding: 24px; }
+
+    /* Filters Panel */
+    .filters-panel {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .filters-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filters-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .filters-body { padding: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-label { font-size: 12px; font-weight: 500; color: var(--gray-600); }
+    .filter-input, .filter-select {
+      padding: 8px 12px;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .filter-input:focus, .filter-select:focus { outline: none; border-color: var(--primary); }
+    .filter-actions {
+      grid-column: span 4;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 8px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: white; border: 1px solid var(--gray-300); color: var(--gray-700); }
+    .btn-secondary:hover { background: var(--gray-50); }
+
+    /* Results */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .results-count { font-size: 14px; color: var(--gray-600); }
+    .results-count strong { color: var(--gray-800); }
+
+    .results-table {
+      width: 100%;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border-collapse: collapse;
+      overflow: hidden;
+    }
+    .results-table th {
+      background: var(--gray-50);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .results-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 13px;
+    }
+    .results-table tr:hover { background: var(--gray-50); }
+
+    .task-id { font-weight: 600; color: var(--gray-700); }
+    .task-title { color: var(--gray-800); font-weight: 500; cursor: pointer; }
+    .task-title:hover { color: var(--primary); }
+    
+    .priority-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+    .priority-badge.alta { background: #fef2f2; color: #dc2626; }
+    .priority-badge.media { background: #fefce8; color: #ca8a04; }
+    .priority-badge.baja { background: #f0fdf4; color: #16a34a; }
+    
+    .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+    .status-badge.pendiente { background: #fefce8; color: #ca8a04; }
+    .status-badge.en-proceso { background: #dbeafe; color: #2563eb; }
+    .status-badge.terminada { background: #d1fae5; color: #059669; }
+    .status-badge.atrasada { background: #fef2f2; color: #dc2626; }
+
+    .user-cell { display: flex; align-items: center; gap: 8px; }
+    .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; }
+
+    .actions-cell { display: flex; gap: 4px; }
+    .action-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 6px; color: var(--gray-400); }
+    .action-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: #fff;
+      border-top: 1px solid var(--gray-200);
+      border-radius: 0 0 8px 8px;
+    }
+    .pagination-info { font-size: 13px; color: var(--gray-500); }
+    .pagination-controls { display: flex; gap: 4px; }
+    .page-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--gray-200);
+      background: white;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--gray-600);
+      cursor: pointer;
+    }
+    .page-btn:hover { background: var(--gray-50); }
+    .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Theme Controls */
+    .theme-controls {
+      position: fixed; top: 16px; right: 16px;
+      z-index: 500;
+      display: flex; gap: 8px;
+    }
+    .theme-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 12px; font-weight: 600;
+      color: var(--gray-700);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .theme-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .theme-chip .dot { width: 12px; height: 12px; border-radius: 50%; }
+  </style>
+</head>
+
+<div class="theme-controls">
+  <div class="theme-chip active" onclick="applyPreset('docflow', this)">
+    <span class="dot" style="background:#1a56db"></span> DocFlow
+  </div>
+  <div class="theme-chip" onclick="applyPreset('villarrica', this)">
+    <span class="dot" style="background:#166534"></span> Villarrica
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lampa', this)">
+    <span class="dot" style="background:#7c3aed"></span> Lampa
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lascondes', this)">
+    <span class="dot" style="background:#b91c1c"></span> Las Condes
+  </div>
+</div>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <span class="sidebar-brand-text">DocFlow</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-card">
+        <div class="sidebar-avatar">GM</div>
+        <div>
+          <div class="sidebar-user-name">Giannina Mondino</div>
+          <div class="sidebar-user-dept">Dept. Normativo</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Principal</div>
+        <a class="nav-item" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span class="nav-label">Bandeja de Entrada</span>
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Documentos</div>
+        <a class="nav-item" href="#">Registro</a>
+        <a class="nav-item" href="#">Consulta Documentos</a>
+        <a class="nav-item active" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span class="nav-label">Consulta Tareas</span>
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Sistema</div>
+        <a class="nav-item" href="#">Archivadores</a>
+        <a class="nav-item" href="#">Reportes</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-wrapper">
+    <header class="header">
+      <button class="header-toggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <h1 class="header-title">Consulta Tareas</h1>
+      <div class="header-actions">
+        <button class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva Tarea
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- Filters Panel -->
+      <div class="filters-panel">
+        <div class="filters-header">
+          <div class="filters-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            Filtros de Busqueda
+          </div>
+        </div>
+        <div class="filters-body">
+          <div class="filter-group">
+            <label class="filter-label">ID Tarea</label>
+            <input type="text" class="filter-input" placeholder="Ej: TAR-001">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Estado</label>
+            <select class="filter-select">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="en-proceso">En Proceso</option>
+              <option value="terminada">Terminada</option>
+              <option value="atrasada">Atrasada</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Fecha Desde</label>
+            <input type="date" class="filter-input">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Fecha Hasta</label>
+            <input type="date" class="filter-input">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Usuario Asignado</label>
+            <select class="filter-select">
+              <option value="">Todos</option>
+              <option value="giannina">Giannina Mondino</option>
+              <option value="juan">Juan Perez</option>
+              <option value="maria">Maria Gonzalez</option>
+              <option value="carlos">Carlos Rodriguez</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Prioridad</label>
+            <select class="filter-select">
+              <option value="">Todas</option>
+              <option value="alta">Alta</option>
+              <option value="media">Media</option>
+              <option value="baja">Baja</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Documento Asociado</label>
+            <input type="text" class="filter-input" placeholder="N° Documento">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Asunto</label>
+            <input type="text" class="filter-input" placeholder="Palabras clave">
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-secondary">Limpiar</button>
+            <button class="btn btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Buscar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="results-header">
+        <div class="results-count">Se encontraron <strong>23</strong> tareas</div>
+      </div>
+
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th style="width: 90px;">ID</th>
+            <th>Asunto</th>
+            <th style="width: 100px;">Fecha Creacion</th>
+            <th style="width: 100px;">Fecha Venc.</th>
+            <th style="width: 80px;">Prioridad</th>
+            <th style="width: 100px;">Estado</th>
+            <th style="width: 120px;">Asignado a</th>
+            <th style="width: 80px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="task-id">TAR-045</span></td>
+            <td><span class="task-title">Revisar antecedentes del permiso de construccion</span></td>
+            <td>07/04/2026</td>
+            <td style="color: var(--danger);">10/04/2026</td>
+            <td><span class="priority-badge alta">Alta</span></td>
+            <td><span class="status-badge en-proceso">En Proceso</span></td>
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">GM</div>
+                <span>Giannina M.</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button class="action-btn" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="task-id">TAR-044</span></td>
+            <td><span class="task-title">Emitir informe tecnico sobre zonificacion</span></td>
+            <td>06/04/2026</td>
+            <td>14/04/2026</td>
+            <td><span class="priority-badge media">Media</span></td>
+            <td><span class="status-badge pendiente">Pendiente</span></td>
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">JP</div>
+                <span>Juan Perez</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button class="action-btn" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="task-id">TAR-043</span></td>
+            <td><span class="task-title">Revisar presupuesto departamental 2026</span></td>
+            <td>05/04/2026</td>
+            <td style="color: var(--danger);">07/04/2026</td>
+            <td><span class="priority-badge alta">Alta</span></td>
+            <td><span class="status-badge atrasada">Atrasada</span></td>
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">GM</div>
+                <span>Giannina M.</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button class="action-btn" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="task-id">TAR-042</span></td>
+            <td><span class="task-title">Actualizar registro de usuarios del sistema</span></td>
+            <td>04/04/2026</td>
+            <td>11/04/2026</td>
+            <td><span class="priority-badge baja">Baja</span></td>
+            <td><span class="status-badge terminada">Terminada</span></td>
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">MG</div>
+                <span>Maria G.</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button class="action-btn" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="task-id">TAR-041</span></td>
+            <td><span class="task-title">Preparar informe de productividad mensual</span></td>
+            <td>03/04/2026</td>
+            <td>05/04/2026</td>
+            <td><span class="priority-badge media">Media</span></td>
+            <td><span class="status-badge terminada">Terminada</span></td>
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">CR</div>
+                <span>Carlos R.</span>
+              </div>
+            </td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button class="action-btn" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <div class="pagination-info">Mostrando 1-5 de 23 tareas</div>
+        <div class="pagination-controls">
+          <button class="page-btn">&laquo;</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">&raquo;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const root = document.documentElement;
+  const presets = {
+    docflow: { name: 'DocFlow', primary: '#1a56db', primaryDark: '#1240a8', primaryLight: '#e8effc' },
+    villarrica: { name: 'SGD Villarrica', primary: '#166534', primaryDark: '#14532d', primaryLight: '#f0fdf4' },
+    lampa: { name: 'DocFlow Lampa', primary: '#7c3aed', primaryDark: '#5b21b6', primaryLight: '#f5f3ff' },
+    lascondes: { name: 'GesDoc', primary: '#b91c1c', primaryDark: '#991b1b', primaryLight: '#fef2f2' }
+  };
+  function applyPreset(name, chip) {
+    const p = presets[name];
+    if (!p) return;
+    document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    root.style.setProperty('--primary', p.primary);
+    root.style.setProperty('--primary-dark', p.primaryDark);
+    root.style.setProperty('--primary-light', p.primaryLight);
+    document.querySelector('.sidebar-brand-text').textContent = p.name;
+  }
+</script>
+</body>
+</html>

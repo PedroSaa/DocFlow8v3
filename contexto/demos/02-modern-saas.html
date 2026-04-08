@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocFlow v3 — Demo 2: Modern SaaS</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --primary: #4f46e5;
+    --primary-light: #eef2ff;
+    --primary-dark: #3730a3;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #6366f1;
+    --surface: #ffffff;
+    --bg: #f8fafc;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+    --sidebar-width: 260px;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--gray-800); font-size: 14px; line-height: 1.6; }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0;
+    width: var(--sidebar-width); background: white;
+    border-right: 1px solid var(--gray-200);
+    display: flex; flex-direction: column; z-index: 100;
+  }
+  .sidebar-header {
+    padding: 20px 20px 16px; display: flex; align-items: center; gap: 10px;
+  }
+  .logo-mark {
+    width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), #818cf8);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 16px;
+  }
+  .logo-text { font-size: 20px; font-weight: 700; color: var(--gray-900); }
+  .logo-text span { color: var(--primary); }
+
+  /* COMMAND PALETTE TRIGGER */
+  .cmd-trigger {
+    margin: 0 16px 16px; padding: 10px 14px; background: var(--gray-50);
+    border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    font-size: 13px; color: var(--gray-400); transition: all 0.2s;
+  }
+  .cmd-trigger:hover { border-color: var(--primary); background: var(--primary-light); }
+  .cmd-trigger kbd {
+    margin-left: auto; background: white; border: 1px solid var(--gray-300);
+    border-radius: 4px; padding: 2px 6px; font-size: 11px; font-family: inherit;
+  }
+
+  .sidebar-nav { flex: 1; padding: 0 12px; overflow-y: auto; }
+  .nav-group { margin-bottom: 20px; }
+  .nav-group-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--gray-400); padding: 4px 12px 8px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+    border-radius: var(--radius-sm); color: var(--gray-600); text-decoration: none;
+    font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--gray-50); color: var(--gray-900); }
+  .nav-item.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+  .nav-item .icon { width: 20px; text-align: center; font-size: 16px; }
+  .nav-item .count {
+    margin-left: auto; background: var(--gray-100); color: var(--gray-600);
+    font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+  }
+  .nav-item.active .count { background: rgba(79,70,229,0.15); color: var(--primary); }
+  .nav-item .count.alert { background: #fef2f2; color: var(--danger); }
+
+  .sidebar-footer { padding: 16px; border-top: 1px solid var(--gray-100); }
+  .user-card {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+    border-radius: var(--radius-sm); cursor: pointer; transition: background 0.15s;
+  }
+  .user-card:hover { background: var(--gray-50); }
+  .user-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), #818cf8);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 600; font-size: 13px;
+  }
+  .user-name { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+  .user-dept { font-size: 11px; color: var(--gray-400); }
+
+  /* MAIN */
+  .main { margin-left: var(--sidebar-width); }
+  .content { padding: 32px; max-width: 1200px; }
+
+  /* PAGE HEADER */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .page-title { font-size: 24px; font-weight: 700; color: var(--gray-900); }
+  .page-subtitle { font-size: 14px; color: var(--gray-500); margin-top: 2px; }
+  .page-actions { display: flex; gap: 10px; }
+  .btn {
+    padding: 9px 16px; border-radius: var(--radius-sm); font-size: 13px;
+    font-weight: 600; cursor: pointer; border: none; display: flex;
+    align-items: center; gap: 6px; transition: all 0.15s;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+  .btn-outline { background: white; color: var(--gray-700); border: 1px solid var(--gray-300); }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* GREETING BANNER */
+  .greeting {
+    background: linear-gradient(135deg, var(--primary), #818cf8);
+    border-radius: var(--radius); padding: 28px 32px; color: white;
+    margin-bottom: 28px; position: relative; overflow: hidden;
+  }
+  .greeting::after {
+    content: ''; position: absolute; right: -20px; top: -20px;
+    width: 200px; height: 200px; background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+  .greeting h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .greeting p { font-size: 14px; opacity: 0.85; }
+  .greeting-stats { display: flex; gap: 32px; margin-top: 20px; }
+  .greeting-stat { text-align: center; }
+  .greeting-stat .num { font-size: 28px; font-weight: 700; }
+  .greeting-stat .label { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* STAT CARDS */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: white; border-radius: var(--radius); padding: 22px;
+    border: 1px solid var(--gray-100); transition: all 0.2s;
+  }
+  .stat-card:hover { border-color: var(--gray-200); box-shadow: 0 4px 12px rgba(0,0,0,0.04); transform: translateY(-2px); }
+  .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .stat-label { font-size: 13px; color: var(--gray-500); font-weight: 500; }
+  .stat-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .stat-value { font-size: 32px; font-weight: 700; color: var(--gray-900); line-height: 1; }
+  .stat-footer { font-size: 12px; color: var(--gray-400); margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+  .trend-up { color: var(--success); font-weight: 600; }
+  .trend-down { color: var(--danger); font-weight: 600; }
+
+  .stat-icon.red { background: linear-gradient(135deg, #fef2f2, #fee2e2); color: var(--danger); }
+  .stat-icon.green { background: linear-gradient(135deg, #f0fdf4, #dcfce7); color: var(--success); }
+  .stat-icon.blue { background: linear-gradient(135deg, #eef2ff, #e0e7ff); color: var(--primary); }
+  .stat-icon.yellow { background: linear-gradient(135deg, #fffbeb, #fef3c7); color: var(--warning); }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 3fr 2fr; gap: 20px; margin-bottom: 20px; }
+
+  /* CARD */
+  .card { background: white; border-radius: var(--radius); border: 1px solid var(--gray-100); }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px 16px;
+  }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--gray-900); }
+  .card-action {
+    font-size: 12px; color: var(--primary); font-weight: 600;
+    cursor: pointer; text-decoration: none;
+  }
+  .card-action:hover { text-decoration: underline; }
+  .card-body { padding: 0 24px 20px; }
+
+  /* DOC LIST ITEMS */
+  .doc-item {
+    display: flex; align-items: center; gap: 14px; padding: 14px 0;
+    border-bottom: 1px solid var(--gray-50);
+  }
+  .doc-item:last-child { border-bottom: none; }
+  .doc-type-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .doc-type-icon.oficio { background: #eef2ff; }
+  .doc-type-icon.decreto { background: #fef2f2; }
+  .doc-type-icon.memo { background: #f0fdf4; }
+  .doc-type-icon.carta { background: #fffbeb; }
+  .doc-info { flex: 1; min-width: 0; }
+  .doc-title { font-size: 13px; font-weight: 600; color: var(--gray-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .doc-meta { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+  .doc-right { text-align: right; flex-shrink: 0; }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-danger { background: #fef2f2; color: var(--danger); }
+  .badge-warning { background: #fffbeb; color: #92400e; }
+  .badge-success { background: #f0fdf4; color: #166534; }
+  .badge-info { background: var(--primary-light); color: var(--primary); }
+
+  /* TIMELINE */
+  .timeline-item { display: flex; gap: 14px; padding: 12px 0; position: relative; }
+  .timeline-item:not(:last-child)::after {
+    content: ''; position: absolute; left: 15px; top: 38px; bottom: -2px;
+    width: 2px; background: var(--gray-100);
+  }
+  .timeline-dot {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; z-index: 1;
+  }
+  .timeline-dot.sign { background: #dcfce7; }
+  .timeline-dot.send { background: #e0e7ff; }
+  .timeline-dot.vb { background: #fef3c7; }
+  .timeline-dot.expire { background: #fee2e2; }
+  .timeline-content { flex: 1; }
+  .timeline-text { font-size: 13px; color: var(--gray-700); }
+  .timeline-text strong { color: var(--gray-900); }
+  .timeline-time { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+  /* DEMO LABELS */
+  .demo-label {
+    background: linear-gradient(135deg, var(--primary), #818cf8);
+    color: white; text-align: center; padding: 12px; font-size: 14px;
+    font-weight: 700; letter-spacing: 0.5px;
+  }
+  .demo-sublabel { background: var(--primary-light); color: var(--primary); text-align: center; padding: 8px; font-size: 12px; }
+
+  /* COMMAND PALETTE OVERLAY (static demo) */
+  .cmd-palette-demo {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 560px; background: white; border-radius: 16px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.2); z-index: 1000; display: none;
+    overflow: hidden;
+  }
+  .cmd-palette-demo.show { display: block; }
+  .cmd-input {
+    width: 100%; padding: 18px 20px; border: none; font-size: 16px;
+    border-bottom: 1px solid var(--gray-100); outline: none; font-family: inherit;
+  }
+  .cmd-results { padding: 8px; }
+  .cmd-result {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+    border-radius: 8px; cursor: pointer; font-size: 14px; color: var(--gray-700);
+  }
+  .cmd-result:hover, .cmd-result.selected { background: var(--primary-light); color: var(--primary); }
+  .cmd-result .icon { font-size: 16px; width: 20px; text-align: center; }
+  .cmd-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 999; display: none; }
+  .cmd-overlay.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="demo-label">DEMO 2: MODERN SaaS — Sidebar + Command Palette (Ctrl+K) — Densidad Espaciosa</div>
+<div class="demo-sublabel">Moderno, elegante, rounded. Inspirado en Notion, Linear, Vercel. Click en el buscador del sidebar para ver el Command Palette</div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-mark">D</div>
+    <div class="logo-text">Doc<span>Flow</span></div>
+  </div>
+
+  <div class="cmd-trigger" onclick="toggleCmd()">
+    🔍 Buscar... <kbd>⌘K</kbd>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-group">
+      <a class="nav-item active"><span class="icon">📊</span> Dashboard</a>
+      <a class="nav-item"><span class="icon">📥</span> Bandeja de entrada <span class="count alert">12</span></a>
+      <a class="nav-item"><span class="icon">📤</span> Bandeja de salida <span class="count">3</span></a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Documentos</div>
+      <a class="nav-item"><span class="icon">➕</span> Nuevo documento</a>
+      <a class="nav-item"><span class="icon">🔍</span> Consulta</a>
+      <a class="nav-item"><span class="icon">📁</span> Expedientes <span class="count">5</span></a>
+      <a class="nav-item"><span class="icon">🗄️</span> Archivadores</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Flujo de trabajo</div>
+      <a class="nav-item"><span class="icon">✅</span> Mis tareas <span class="count alert">5</span></a>
+      <a class="nav-item"><span class="icon">✍️</span> Firma digital</a>
+      <a class="nav-item"><span class="icon">👁️</span> V° Bueno</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Reportes</div>
+      <a class="nav-item"><span class="icon">📈</span> Dashboard</a>
+      <a class="nav-item"><span class="icon">📋</span> Informes</a>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">GM</div>
+      <div>
+        <div class="user-name">Giannina Mondino</div>
+        <div class="user-dept">Depto. Normativo</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- CMD PALETTE -->
+<div class="cmd-overlay" id="cmdOverlay" onclick="toggleCmd()"></div>
+<div class="cmd-palette-demo" id="cmdPalette">
+  <input class="cmd-input" placeholder="Buscar documentos, tareas, expedientes..." autofocus>
+  <div class="cmd-results">
+    <div class="cmd-result selected"><span class="icon">📄</span> #9645 — Respuesta Contraloria Regional</div>
+    <div class="cmd-result"><span class="icon">📄</span> #9638 — Decreto pago factura servicio aseo</div>
+    <div class="cmd-result"><span class="icon">📁</span> Expediente: Licitacion Aseo Industrial</div>
+    <div class="cmd-result"><span class="icon">✅</span> Tarea: Revisar y visar decreto #9638</div>
+    <div class="cmd-result"><span class="icon">👤</span> Patricia Gonzalez — Secretaria Municipal</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="content">
+
+    <!-- GREETING -->
+    <div class="greeting">
+      <h2>Buenos dias, Giannina 👋</h2>
+      <p>Tienes items pendientes que requieren tu atencion hoy</p>
+      <div class="greeting-stats">
+        <div class="greeting-stat"><div class="num">8</div><div class="label">Pendientes</div></div>
+        <div class="greeting-stat"><div class="num">5</div><div class="label">Tareas</div></div>
+        <div class="greeting-stat"><div class="num">2</div><div class="label">V°B°</div></div>
+        <div class="greeting-stat"><div class="num">3</div><div class="label">No leidos</div></div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-label">Pendientes de respuesta</div>
+          <div class="stat-icon red">📄</div>
+        </div>
+        <div class="stat-value">8</div>
+        <div class="stat-footer"><span class="trend-down">↑ 3</span> desde ayer</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-label">Tareas por ejecutar</div>
+          <div class="stat-icon green">✅</div>
+        </div>
+        <div class="stat-value">5</div>
+        <div class="stat-footer"><span class="trend-up">↓ 2</span> desde ayer</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-label">Documentos no leidos</div>
+          <div class="stat-icon blue">📬</div>
+        </div>
+        <div class="stat-value">3</div>
+        <div class="stat-footer">Sin cambios hoy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-label">V°B° pendientes</div>
+          <div class="stat-icon yellow">✍️</div>
+        </div>
+        <div class="stat-value">2</div>
+        <div class="stat-footer"><span class="trend-down">↑ 1</span> nuevo hoy</div>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid-2">
+      <!-- DOCS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Requieren tu atencion</div>
+          <a class="card-action">Ver todos →</a>
+        </div>
+        <div class="card-body">
+          <div class="doc-item">
+            <div class="doc-type-icon oficio">📋</div>
+            <div class="doc-info">
+              <div class="doc-title">#9645 — Respuesta Contraloria Regional</div>
+              <div class="doc-meta">Oficio · Secretaria Municipal · Hace 2h</div>
+            </div>
+            <div class="doc-right"><span class="badge badge-danger">Vence hoy</span></div>
+          </div>
+          <div class="doc-item">
+            <div class="doc-type-icon decreto">📜</div>
+            <div class="doc-info">
+              <div class="doc-title">#9638 — Pago factura servicio aseo</div>
+              <div class="doc-meta">Decreto · DAF · Hace 1 dia</div>
+            </div>
+            <div class="doc-right"><span class="badge badge-danger">Vencido</span></div>
+          </div>
+          <div class="doc-item">
+            <div class="doc-type-icon memo">📝</div>
+            <div class="doc-info">
+              <div class="doc-title">#9632 — Recurso administrativo</div>
+              <div class="doc-meta">Apelacion · Depto. Normativo · Hace 3h</div>
+            </div>
+            <div class="doc-right"><span class="badge badge-warning">3 dias</span></div>
+          </div>
+          <div class="doc-item">
+            <div class="doc-type-icon carta">✉️</div>
+            <div class="doc-info">
+              <div class="doc-title">#9625 — Convenio colaboracion interinstitucional</div>
+              <div class="doc-meta">Carta · Alcaldia · Hace 5h</div>
+            </div>
+            <div class="doc-right"><span class="badge badge-info">Por firmar</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIMELINE -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Actividad reciente</div>
+          <a class="card-action">Ver todo →</a>
+        </div>
+        <div class="card-body">
+          <div class="timeline-item">
+            <div class="timeline-dot sign">✅</div>
+            <div class="timeline-content">
+              <div class="timeline-text"><strong>Patricia Gonzalez</strong> firmo el decreto #9640</div>
+              <div class="timeline-time">Hace 15 minutos</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot send">📤</div>
+            <div class="timeline-content">
+              <div class="timeline-text"><strong>Manuel Rodriguez</strong> te envio un oficio</div>
+              <div class="timeline-time">Hace 1 hora</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot vb">👁️</div>
+            <div class="timeline-content">
+              <div class="timeline-text">V°B° solicitado en <strong>Decreto #9638</strong></div>
+              <div class="timeline-time">Hace 2 horas</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot expire">⏰</div>
+            <div class="timeline-content">
+              <div class="timeline-text"><strong>Expediente Exp-104</strong> vencio ayer</div>
+              <div class="timeline-time">Ayer, 17:30</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+function toggleCmd() {
+  document.getElementById('cmdPalette').classList.toggle('show');
+  document.getElementById('cmdOverlay').classList.toggle('show');
+}
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); toggleCmd(); }
+  if (e.key === 'Escape') { document.getElementById('cmdPalette').classList.remove('show'); document.getElementById('cmdOverlay').classList.remove('show'); }
+});
+</script>
+
+</body>
+</html>

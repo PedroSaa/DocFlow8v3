@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocFlow v3 — Demo 4: Material Design 3</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+  :root {
+    --primary: #1a73e8;
+    --primary-container: #d3e3fd;
+    --on-primary: #ffffff;
+    --on-primary-container: #041e49;
+    --secondary: #5f6368;
+    --secondary-container: #e8eaed;
+    --tertiary: #1e8e3e;
+    --error: #d93025;
+    --error-container: #fce8e6;
+    --warning: #f9ab00;
+    --warning-container: #fef7e0;
+    --surface: #ffffff;
+    --surface-dim: #f8f9fa;
+    --surface-container: #f1f3f4;
+    --surface-container-high: #e8eaed;
+    --on-surface: #202124;
+    --on-surface-variant: #5f6368;
+    --outline: #dadce0;
+    --outline-variant: #e8eaed;
+    --sidebar-width: 256px;
+    --sidebar-collapsed: 72px;
+    --header-height: 56px;
+    --elevation-1: 0 1px 2px rgba(60,64,67,0.3), 0 1px 3px rgba(60,64,67,0.15);
+    --elevation-2: 0 1px 2px rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15);
+    --shape-sm: 8px;
+    --shape-md: 12px;
+    --shape-lg: 16px;
+    --shape-xl: 28px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--surface-dim); color: var(--on-surface); font-size: 14px; line-height: 1.5; }
+
+  /* SIDEBAR (Navigation Rail / Drawer) */
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0;
+    width: var(--sidebar-width); background: var(--surface);
+    border-right: 1px solid var(--outline-variant);
+    display: flex; flex-direction: column; z-index: 100;
+  }
+  .sidebar-header {
+    height: var(--header-height); display: flex; align-items: center;
+    padding: 0 16px; gap: 12px;
+  }
+  .logo-container { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 40px; height: 40px; border-radius: 14px;
+    background: var(--primary-container); display: flex;
+    align-items: center; justify-content: center;
+    color: var(--on-primary-container); font-weight: 700; font-size: 16px;
+  }
+  .logo-name { font-size: 20px; font-weight: 500; color: var(--on-surface); letter-spacing: -0.5px; }
+  .logo-name span { color: var(--primary); font-weight: 700; }
+
+  .sidebar-nav { flex: 1; padding: 8px 12px; overflow-y: auto; }
+  .nav-section { margin-bottom: 8px; }
+  .nav-section-label {
+    font-size: 11px; font-weight: 500; color: var(--on-surface-variant);
+    padding: 16px 16px 4px; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px; padding: 0 16px;
+    height: 48px; border-radius: var(--shape-xl); color: var(--on-surface-variant);
+    text-decoration: none; cursor: pointer; transition: all 0.2s;
+    font-size: 14px; font-weight: 500; margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--surface-container); }
+  .nav-item.active { background: var(--primary-container); color: var(--on-primary-container); font-weight: 700; }
+  .nav-item .icon { width: 24px; text-align: center; font-size: 18px; }
+  .nav-item .badge {
+    margin-left: auto; min-width: 24px; height: 24px;
+    background: var(--error); color: white; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .nav-item.active .badge { background: var(--error); }
+
+  .sidebar-footer { padding: 12px; }
+  .user-chip {
+    display: flex; align-items: center; gap: 12px; padding: 8px 12px;
+    border-radius: var(--shape-xl); cursor: pointer; transition: background 0.2s;
+  }
+  .user-chip:hover { background: var(--surface-container); }
+  .user-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--primary); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--on-surface); }
+  .user-dept { font-size: 11px; color: var(--on-surface-variant); }
+
+  /* HEADER */
+  .header {
+    position: fixed; top: 0; left: var(--sidebar-width); right: 0;
+    height: var(--header-height); background: var(--surface);
+    border-bottom: 1px solid var(--outline-variant);
+    display: flex; align-items: center; padding: 0 24px; z-index: 90;
+  }
+  .header-title { font-size: 22px; font-weight: 400; color: var(--on-surface); }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .search-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface-container); border-radius: var(--shape-xl);
+    padding: 8px 16px; min-width: 320px; cursor: pointer;
+    font-size: 14px; color: var(--on-surface-variant);
+    border: 1px solid transparent; transition: all 0.2s;
+  }
+  .search-bar:hover { background: var(--surface-container-high); }
+  .search-bar:focus-within { background: white; border-color: var(--primary); box-shadow: var(--elevation-1); }
+  .search-bar kbd { margin-left: auto; font-size: 11px; color: var(--on-surface-variant); font-family: inherit; }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 50%; border: none;
+    background: none; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; color: var(--on-surface-variant); font-size: 20px;
+    transition: background 0.2s; position: relative;
+  }
+  .icon-btn:hover { background: var(--surface-container); }
+  .icon-btn .dot {
+    position: absolute; top: 8px; right: 8px; width: 8px; height: 8px;
+    background: var(--error); border-radius: 50%; border: 2px solid var(--surface);
+  }
+
+  /* MAIN */
+  .main { margin-left: var(--sidebar-width); padding-top: var(--header-height); }
+  .content { padding: 24px; }
+
+  /* DENSITY TOGGLE */
+  .density-toggle {
+    display: flex; background: var(--surface-container); border-radius: var(--shape-xl);
+    padding: 4px; margin-bottom: 20px; width: fit-content;
+  }
+  .density-btn {
+    padding: 8px 20px; border-radius: var(--shape-xl); border: none;
+    background: none; font-size: 13px; font-weight: 500; cursor: pointer;
+    color: var(--on-surface-variant); transition: all 0.2s; font-family: inherit;
+  }
+  .density-btn.active { background: var(--primary); color: white; box-shadow: var(--elevation-1); }
+  .density-btn:hover:not(.active) { background: var(--surface-container-high); }
+
+  /* STATS - Material Card Style */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface); border-radius: var(--shape-md);
+    padding: 20px; border: 1px solid var(--outline-variant);
+    transition: all 0.2s;
+  }
+  .stat-card:hover { box-shadow: var(--elevation-1); }
+  .stat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .stat-label { font-size: 14px; color: var(--on-surface-variant); font-weight: 500; }
+  .stat-icon {
+    width: 48px; height: 48px; border-radius: var(--shape-md);
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .stat-icon.red { background: var(--error-container); }
+  .stat-icon.green { background: #e6f4ea; }
+  .stat-icon.blue { background: var(--primary-container); }
+  .stat-icon.yellow { background: var(--warning-container); }
+  .stat-value { font-size: 36px; font-weight: 400; color: var(--on-surface); }
+  .stat-trend { font-size: 12px; color: var(--on-surface-variant); margin-top: 4px; }
+
+  /* GRID */
+  .grid-main { display: grid; grid-template-columns: 5fr 3fr; gap: 16px; margin-bottom: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* CARD */
+  .card {
+    background: var(--surface); border-radius: var(--shape-md);
+    border: 1px solid var(--outline-variant);
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .card-title { font-size: 16px; font-weight: 500; color: var(--on-surface); }
+  .card-action {
+    font-size: 13px; color: var(--primary); font-weight: 500;
+    cursor: pointer; text-decoration: none; padding: 4px 12px;
+    border-radius: var(--shape-xl); transition: background 0.2s;
+  }
+  .card-action:hover { background: var(--primary-container); }
+  .card-divider { height: 1px; background: var(--outline-variant); }
+  .card-body { padding: 8px 24px 16px; }
+
+  /* LIST ITEMS - M3 Style */
+  .list-item {
+    display: flex; align-items: center; gap: 16px; padding: 12px 0;
+    border-bottom: 1px solid var(--outline-variant);
+  }
+  .list-item:last-child { border-bottom: none; }
+  .list-leading {
+    width: 40px; height: 40px; border-radius: var(--shape-md);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .list-leading.oficio { background: var(--primary-container); }
+  .list-leading.decreto { background: var(--error-container); }
+  .list-leading.memo { background: #e6f4ea; }
+  .list-leading.carta { background: var(--warning-container); }
+  .list-content { flex: 1; min-width: 0; }
+  .list-headline { font-size: 14px; font-weight: 500; color: var(--on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .list-supporting { font-size: 12px; color: var(--on-surface-variant); margin-top: 2px; }
+  .list-trailing { flex-shrink: 0; }
+
+  /* CHIPS */
+  .chip {
+    display: inline-flex; align-items: center; padding: 4px 12px;
+    border-radius: 8px; font-size: 12px; font-weight: 500;
+    border: 1px solid var(--outline);
+  }
+  .chip-error { background: var(--error-container); color: var(--error); border-color: transparent; }
+  .chip-warning { background: var(--warning-container); color: #e37400; border-color: transparent; }
+  .chip-success { background: #e6f4ea; color: var(--tertiary); border-color: transparent; }
+  .chip-primary { background: var(--primary-container); color: var(--primary); border-color: transparent; }
+
+  /* TIMELINE M3 */
+  .m3-timeline { }
+  .m3-timeline-item { display: flex; gap: 16px; padding: 12px 0; }
+  .m3-timeline-item:not(:last-child) { border-bottom: 1px solid var(--outline-variant); }
+  .m3-timeline-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .m3-timeline-content { flex: 1; }
+  .m3-timeline-text { font-size: 13px; color: var(--on-surface); }
+  .m3-timeline-text strong { font-weight: 500; }
+  .m3-timeline-time { font-size: 12px; color: var(--on-surface-variant); margin-top: 2px; }
+
+  /* FAB */
+  .fab {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 56px; height: 56px; border-radius: 16px;
+    background: var(--primary-container); color: var(--on-primary-container);
+    border: none; cursor: pointer; font-size: 24px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--elevation-2); transition: all 0.2s; z-index: 50;
+  }
+  .fab:hover { box-shadow: 0 4px 12px rgba(60,64,67,0.3); transform: scale(1.05); }
+
+  /* DEMO */
+  .demo-label {
+    background: var(--primary); color: white; text-align: center;
+    padding: 12px; font-size: 14px; font-weight: 500;
+  }
+  .demo-sublabel { background: var(--primary-container); color: var(--on-primary-container); text-align: center; padding: 8px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="demo-label">DEMO 4: MATERIAL DESIGN 3 — Sidebar Colapsable — Densidad Adaptable (toggle)</div>
+<div class="demo-sublabel">Sistema de Google actualizado. Shapes redondeados, tokens de color, componentes estandar. Toggle de densidad arriba a la izquierda</div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-container">
+      <div class="logo-icon">DF</div>
+      <div class="logo-name">Doc<span>Flow</span></div>
+    </div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">
+      <a class="nav-item active"><span class="icon">📊</span> Dashboard</a>
+      <a class="nav-item"><span class="icon">📥</span> Bandeja de entrada <span class="badge">12</span></a>
+      <a class="nav-item"><span class="icon">📤</span> Bandeja de salida</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Documentos</div>
+      <a class="nav-item"><span class="icon">➕</span> Nuevo documento</a>
+      <a class="nav-item"><span class="icon">🔍</span> Consulta</a>
+      <a class="nav-item"><span class="icon">📁</span> Expedientes</a>
+      <a class="nav-item"><span class="icon">🗄️</span> Archivadores</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Flujo de trabajo</div>
+      <a class="nav-item"><span class="icon">✅</span> Mis tareas <span class="badge">5</span></a>
+      <a class="nav-item"><span class="icon">✍️</span> Firma digital</a>
+      <a class="nav-item"><span class="icon">👁️</span> V° Bueno</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Administracion</div>
+      <a class="nav-item"><span class="icon">📈</span> Reportes</a>
+      <a class="nav-item"><span class="icon">👥</span> Usuarios</a>
+      <a class="nav-item"><span class="icon">⚙️</span> Configuracion</a>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="user-avatar">GM</div>
+      <div>
+        <div class="user-name">Giannina Mondino</div>
+        <div class="user-dept">Depto. Normativo</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-title">Dashboard</div>
+  <div class="header-right">
+    <div class="search-bar">
+      🔍 Buscar documentos, tareas, expedientes... <kbd>Ctrl+K</kbd>
+    </div>
+    <button class="icon-btn">🔔<span class="dot"></span></button>
+    <button class="icon-btn">⚙️</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="content">
+
+    <!-- DENSITY TOGGLE -->
+    <div class="density-toggle">
+      <button class="density-btn" onclick="setDensity('compact', this)">Compacta</button>
+      <button class="density-btn active" onclick="setDensity('comfortable', this)">Normal</button>
+      <button class="density-btn" onclick="setDensity('spacious', this)">Espaciosa</button>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-label">Pendientes respuesta</div>
+          <div class="stat-icon red">📄</div>
+        </div>
+        <div class="stat-value">8</div>
+        <div class="stat-trend">↑ 3 desde ayer</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-label">Tareas por ejecutar</div>
+          <div class="stat-icon green">✅</div>
+        </div>
+        <div class="stat-value">5</div>
+        <div class="stat-trend">↓ 2 desde ayer</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-label">No leidos</div>
+          <div class="stat-icon blue">📬</div>
+        </div>
+        <div class="stat-value">3</div>
+        <div class="stat-trend">Sin cambios</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-label">V°B° pendientes</div>
+          <div class="stat-icon yellow">✍️</div>
+        </div>
+        <div class="stat-value">2</div>
+        <div class="stat-trend">↑ 1 nuevo</div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="grid-main">
+      <!-- DOCS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Requieren tu atencion</div>
+          <a class="card-action">Ver todos</a>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-body">
+          <div class="list-item">
+            <div class="list-leading oficio">📋</div>
+            <div class="list-content">
+              <div class="list-headline">#9645 — Respuesta Contraloria Regional</div>
+              <div class="list-supporting">Oficio · Secretaria Municipal · Hace 2 horas</div>
+            </div>
+            <div class="list-trailing"><span class="chip chip-error">Vence hoy</span></div>
+          </div>
+          <div class="list-item">
+            <div class="list-leading decreto">📜</div>
+            <div class="list-content">
+              <div class="list-headline">#9638 — Pago factura servicio aseo</div>
+              <div class="list-supporting">Decreto · DAF · Hace 1 dia</div>
+            </div>
+            <div class="list-trailing"><span class="chip chip-error">Vencido</span></div>
+          </div>
+          <div class="list-item">
+            <div class="list-leading memo">📝</div>
+            <div class="list-content">
+              <div class="list-headline">#9632 — Recurso administrativo interno</div>
+              <div class="list-supporting">Apelacion · Depto. Normativo · Hace 3 horas</div>
+            </div>
+            <div class="list-trailing"><span class="chip chip-warning">3 dias</span></div>
+          </div>
+          <div class="list-item">
+            <div class="list-leading carta">✉️</div>
+            <div class="list-content">
+              <div class="list-headline">#9625 — Convenio colaboracion interinstitucional</div>
+              <div class="list-supporting">Carta · Alcaldia · Hace 5 horas</div>
+            </div>
+            <div class="list-trailing"><span class="chip chip-primary">Por firmar</span></div>
+          </div>
+          <div class="list-item">
+            <div class="list-leading oficio">📋</div>
+            <div class="list-content">
+              <div class="list-headline">#9620 — Informe trimestral OIRS</div>
+              <div class="list-supporting">Oficio · Transparencia · Ayer</div>
+            </div>
+            <div class="list-trailing"><span class="chip chip-success">Recibido</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIMELINE -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Actividad reciente</div>
+          <a class="card-action">Ver todo</a>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-body">
+          <div class="m3-timeline">
+            <div class="m3-timeline-item">
+              <div class="m3-timeline-icon" style="background:#e6f4ea">✅</div>
+              <div class="m3-timeline-content">
+                <div class="m3-timeline-text"><strong>Patricia Gonzalez</strong> firmo el decreto #9640</div>
+                <div class="m3-timeline-time">Hace 15 minutos</div>
+              </div>
+            </div>
+            <div class="m3-timeline-item">
+              <div class="m3-timeline-icon" style="background:var(--primary-container)">📤</div>
+              <div class="m3-timeline-content">
+                <div class="m3-timeline-text"><strong>Manuel Rodriguez</strong> te envio un oficio</div>
+                <div class="m3-timeline-time">Hace 1 hora</div>
+              </div>
+            </div>
+            <div class="m3-timeline-item">
+              <div class="m3-timeline-icon" style="background:var(--warning-container)">👁️</div>
+              <div class="m3-timeline-content">
+                <div class="m3-timeline-text">V°B° solicitado en <strong>Decreto #9638</strong></div>
+                <div class="m3-timeline-time">Hace 2 horas</div>
+              </div>
+            </div>
+            <div class="m3-timeline-item">
+              <div class="m3-timeline-icon" style="background:var(--error-container)">⏰</div>
+              <div class="m3-timeline-content">
+                <div class="m3-timeline-text"><strong>Expediente Exp-104</strong> vencio</div>
+                <div class="m3-timeline-time">Ayer, 17:30</div>
+              </div>
+            </div>
+            <div class="m3-timeline-item">
+              <div class="m3-timeline-icon" style="background:var(--primary-container)">🗄️</div>
+              <div class="m3-timeline-content">
+                <div class="m3-timeline-text"><strong>Alcaldia</strong> archivo 3 documentos</div>
+                <div class="m3-timeline-time">Ayer, 14:00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM GRID -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Mis tareas pendientes</div>
+          <a class="card-action">Ver todas</a>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-body">
+          <div class="list-item">
+            <div class="list-leading" style="background:var(--error-container)">🔴</div>
+            <div class="list-content">
+              <div class="list-headline">Revisar y visar decreto</div>
+              <div class="list-supporting">#9638 · Vence hoy</div>
+            </div>
+            <div class="list-trailing"><span class="chip chip-error">Alta</span></div>
+          </div>
+          <div class="list-item">
+            <div class="list-leading" style="background:var(--error-container)">🔴</div>
+            <div class="list-content">
+              <div class="list-headline">Redactar respuesta oficio</div>
+              <div class="list-supporting">#9645 · Vence hoy</div>
+            </div>
+            <div class="list-trailing"><span class="chip chip-error">Alta</span></div>
+          </div>
+          <div class="list-item">
+            <div class="list-leading" style="background:var(--warning-container)">🟡</div>
+            <div class="list-content">
+              <div class="list-headline">Clasificar correspondencia</div>
+              <div class="list-supporting">#9650 · 08 Abril</div>
+            </div>
+            <div class="list-trailing"><span class="chip chip-warning">Media</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Expedientes activos</div>
+          <a class="card-action">Ver todos</a>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-body">
+          <div class="list-item">
+            <div class="list-leading" style="background:var(--warning-container)">📁</div>
+            <div class="list-content">
+              <div class="list-headline">Licitacion Aseo Industrial</div>
+              <div class="list-supporting">12 documentos · Vence 15/04</div>
+            </div>
+            <div class="list-trailing"><span class="chip chip-warning">75%</span></div>
+          </div>
+          <div class="list-item">
+            <div class="list-leading" style="background:var(--primary-container)">📁</div>
+            <div class="list-content">
+              <div class="list-headline">Convenio Salud</div>
+              <div class="list-supporting">8 documentos · Vence 20/04</div>
+            </div>
+            <div class="list-trailing"><span class="chip chip-primary">50%</span></div>
+          </div>
+          <div class="list-item">
+            <div class="list-leading" style="background:var(--error-container)">📁</div>
+            <div class="list-content">
+              <div class="list-headline">Subsidios Q1 2026</div>
+              <div class="list-supporting">23 documentos · Vencido 01/04</div>
+            </div>
+            <div class="list-trailing"><span class="chip chip-error">90%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- FAB -->
+<button class="fab" title="Nuevo documento">➕</button>
+
+<script>
+function setDensity(mode, btn) {
+  document.querySelectorAll('.density-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const root = document.documentElement;
+  switch(mode) {
+    case 'compact':
+      root.style.setProperty('font-size', '12px');
+      document.querySelectorAll('.list-item').forEach(el => el.style.padding = '6px 0');
+      document.querySelectorAll('.stat-card').forEach(el => el.style.padding = '12px');
+      document.querySelectorAll('.stat-value').forEach(el => el.style.fontSize = '28px');
+      break;
+    case 'comfortable':
+      root.style.setProperty('font-size', '14px');
+      document.querySelectorAll('.list-item').forEach(el => el.style.padding = '12px 0');
+      document.querySelectorAll('.stat-card').forEach(el => el.style.padding = '20px');
+      document.querySelectorAll('.stat-value').forEach(el => el.style.fontSize = '36px');
+      break;
+    case 'spacious':
+      root.style.setProperty('font-size', '15px');
+      document.querySelectorAll('.list-item').forEach(el => el.style.padding = '18px 0');
+      document.querySelectorAll('.stat-card').forEach(el => el.style.padding = '28px');
+      document.querySelectorAll('.stat-value').forEach(el => el.style.fontSize = '42px');
+      break;
+  }
+}
+</script>
+
+</body>
+</html>

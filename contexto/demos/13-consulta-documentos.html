@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocFlow v3 — Consulta Documentos</title>
+  <style>
+    :root {
+      --primary: #1a56db;
+      --primary-light: #e8effc;
+      --primary-dark: #1240a8;
+      --success: #0d9f6e;
+      --warning: #e3a008;
+      --danger: #e02424;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --sidebar-width: 260px;
+      --header-height: 64px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--gray-50); color: var(--gray-800);
+      font-size: 14px;
+    }
+    .app-layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--gray-900);
+      color: #fff;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-brand { height: var(--header-height); display: flex; align-items: center; padding: 0 16px; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-logo { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .sidebar-brand-text { font-size: 16px; font-weight: 700; }
+    .sidebar-user { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .sidebar-user-card { display: flex; align-items: center; gap: 12px; }
+    .sidebar-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .sidebar-user-name { font-size: 13px; font-weight: 600; }
+    .sidebar-user-dept { font-size: 11px; color: var(--gray-400); }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+    .sidebar-section { padding: 8px 12px; }
+    .sidebar-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--gray-500); padding: 8px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--gray-300); border-radius: 8px; cursor: pointer; text-decoration: none; }
+    .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .nav-item.active { background: var(--primary); color: #fff; }
+    .nav-icon { width: 20px; height: 20px; }
+    .nav-label { flex: 1; font-size: 13px; }
+    .nav-badge { font-size: 11px; padding: 2px 8px; background: var(--danger); border-radius: 10px; }
+    .nav-nested { display: none; padding-left: 20px; }
+    .nav-nested.show { display: block; }
+    .has-nested.expanded + .nav-nested { display: block; }
+
+    /* Main */
+    .main-wrapper { flex: 1; margin-left: var(--sidebar-width); }
+    .header { height: var(--header-height); background: #fff; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; padding: 0 24px; gap: 16px; }
+    .header-toggle { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 8px; color: var(--gray-600); }
+    .header-toggle:hover { background: var(--gray-100); }
+    .header-title { font-size: 18px; font-weight: 600; }
+    .header-actions { margin-left: auto; display: flex; gap: 8px; }
+    .header-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 8px; color: var(--gray-500); position: relative; }
+    .header-btn:hover { background: var(--gray-100); }
+
+    /* Content */
+    .content { padding: 24px; }
+    
+    /* Filters Panel */
+    .filters-panel {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+    }
+    .filters-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .filters-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .filters-toggle { font-size: 12px; color: var(--primary); cursor: pointer; }
+    .filters-body { padding: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-label { font-size: 12px; font-weight: 500; color: var(--gray-600); }
+    .filter-input, .filter-select {
+      padding: 8px 12px;
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .filter-input:focus, .filter-select:focus { outline: none; border-color: var(--primary); }
+    .filter-actions {
+      grid-column: span 4;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 8px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: white; border: 1px solid var(--gray-300); color: var(--gray-700); }
+    .btn-secondary:hover { background: var(--gray-50); }
+
+    /* Results */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .results-count { font-size: 14px; color: var(--gray-600); }
+    .results-count strong { color: var(--gray-800); }
+
+    .results-table {
+      width: 100%;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border-collapse: collapse;
+      overflow: hidden;
+    }
+    .results-table th {
+      background: var(--gray-50);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .results-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 13px;
+    }
+    .results-table tr:hover { background: var(--gray-50); }
+    
+    .doc-num { font-weight: 600; color: var(--primary); cursor: pointer; }
+    .doc-type { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+    .doc-type.ordinario { background: #e0f2fe; color: #0369a1; }
+    .doc-type.memo { background: #f0fdf4; color: #047857; }
+    .doc-type.oficio { background: #fdf4ff; color: #a855f7; }
+    .doc-type.despacho { background: #fef3c7; color: #d97706; }
+    .doc-type.circular { background: #e0e7ff; color: #4338ca; }
+    
+    .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+    .status-badge.recibido { background: #dbeafe; color: #1d4ed8; }
+    .status-badge.derivado { background: #d1fae5; color: #047857; }
+    .status-badge.leido { background: var(--gray-100); color: var(--gray-600); }
+    .status-badge.archivado { background: #f3f4f6; color: var(--gray-500); }
+    .status-badge.terminado { background: #fef3c7; color: #b45309; }
+
+    .actions-cell { display: flex; gap: 4px; }
+    .action-btn { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 6px; color: var(--gray-400); }
+    .action-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: #fff;
+      border-top: 1px solid var(--gray-200);
+      border-radius: 0 0 8px 8px;
+    }
+    .pagination-info { font-size: 13px; color: var(--gray-500); }
+    .pagination-controls { display: flex; gap: 4px; }
+    .page-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--gray-200);
+      background: white;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--gray-600);
+      cursor: pointer;
+    }
+    .page-btn:hover { background: var(--gray-50); }
+    .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Theme Controls */
+    .theme-controls {
+      position: fixed; top: 16px; right: 16px;
+      z-index: 500;
+      display: flex; gap: 8px;
+    }
+    .theme-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 14px;
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 12px; font-weight: 600;
+      color: var(--gray-700);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .theme-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .theme-chip .dot { width: 12px; height: 12px; border-radius: 50%; }
+  </style>
+</head>
+
+<div class="theme-controls">
+  <div class="theme-chip active" onclick="applyPreset('docflow', this)">
+    <span class="dot" style="background:#1a56db"></span> DocFlow
+  </div>
+  <div class="theme-chip" onclick="applyPreset('villarrica', this)">
+    <span class="dot" style="background:#166534"></span> Villarrica
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lampa', this)">
+    <span class="dot" style="background:#7c3aed"></span> Lampa
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lascondes', this)">
+    <span class="dot" style="background:#b91c1c"></span> Las Condes
+  </div>
+</div>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <span class="sidebar-brand-text">DocFlow</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-card">
+        <div class="sidebar-avatar">GM</div>
+        <div>
+          <div class="sidebar-user-name">Giannina Mondino</div>
+          <div class="sidebar-user-dept">Dept. Normativo</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Principal</div>
+        <a class="nav-item" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span class="nav-label">Bandeja de Entrada</span>
+          <span class="nav-badge">12</span>
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Expedientes</div>
+        <a class="nav-item has-nested" onclick="toggleNested(this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span class="nav-label">Expedientes</span>
+        </a>
+        <div class="nav-nested">
+          <a class="nav-item" href="#">Mis Expedientes</a>
+          <a class="nav-item" href="#">Compartido conmigo</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Documentos</div>
+        <a class="nav-item has-nested" onclick="toggleNested(this)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          <span class="nav-label">Registro</span>
+        </a>
+        <div class="nav-nested">
+          <a class="nav-item" href="#">Registrar Doc. Recibido</a>
+          <a class="nav-item" href="#">Bandeja DocDigital</a>
+          <a class="nav-item" href="#">Bandeja Doc. Recibidos</a>
+          <a class="nav-item" href="#">Crear Doc. Externo</a>
+          <a class="nav-item" href="#">Crear Doc. Interno</a>
+        </div>
+        <a class="nav-item active" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span class="nav-label">Consulta Documentos</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span class="nav-label">Consulta Tareas</span>
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Sistema</div>
+        <a class="nav-item" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          <span class="nav-label">Archivadores</span>
+        </a>
+        <a class="nav-item" href="#">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span class="nav-label">Reportes</span>
+        </a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-wrapper">
+    <header class="header">
+      <button class="header-toggle" onclick="toggleSidebar()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <h1 class="header-title">Consulta Documentos</h1>
+      <div class="header-actions">
+        <button class="header-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- Filters Panel -->
+      <div class="filters-panel">
+        <div class="filters-header">
+          <div class="filters-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            Filtros de Busqueda
+          </div>
+          <span class="filters-toggle" onclick="toggleFilters()">Ocultar / Mostrar</span>
+        </div>
+        <div class="filters-body" id="filtersBody">
+          <div class="filter-group">
+            <label class="filter-label">N° Documento</label>
+            <input type="text" class="filter-input" placeholder="Ej: 245/2026">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Tipo Documento</label>
+            <select class="filter-select">
+              <option value="">Todos</option>
+              <option value="ordinario">Ordinario</option>
+              <option value="memo">Memo</option>
+              <option value="oficio">Oficio</option>
+              <option value="despacho">Despacho</option>
+              <option value="circular">Circular</option>
+              <option value="resolucion">Resolución</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Fecha Desde</label>
+            <input type="date" class="filter-input">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Fecha Hasta</label>
+            <input type="date" class="filter-input">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Remitente</label>
+            <input type="text" class="filter-input" placeholder="Nombre o unidad">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Destinatario</label>
+            <input type="text" class="filter-input" placeholder="Nombre o unidad">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Unidad Origen</label>
+            <select class="filter-select">
+              <option value="">Todas</option>
+              <option value="partes">Oficina de Partes</option>
+              <option value="secretaria">Secretaria Municipal</option>
+              <option value="dideco">DIDECO</option>
+              <option value="obras">Direccion de Obras</option>
+              <option value="admin">Admin - Sistemas</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Estado</label>
+            <select class="filter-select">
+              <option value="">Todos</option>
+              <option value="recibido">Recibido</option>
+              <option value="derivado">Derivado</option>
+              <option value="leido">Leido</option>
+              <option value="terminado">Terminado</option>
+              <option value="archivado">Archivado</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Asunto</label>
+            <input type="text" class="filter-input" placeholder="Palabras clave">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Prioridad</label>
+            <select class="filter-select">
+              <option value="">Todas</option>
+              <option value="alta">Alta</option>
+              <option value="media">Media</option>
+              <option value="baja">Baja</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Usuario Derivado</label>
+            <input type="text" class="filter-input" placeholder="Usuario actual">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Expediente</label>
+            <input type="text" class="filter-input" placeholder="N° Expediente">
+          </div>
+          <div class="filter-actions">
+            <button class="btn btn-secondary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              Limpiar
+            </button>
+            <button class="btn btn-primary">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Buscar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="results-header">
+        <div class="results-count">Se encontraron <strong>47</strong> documentos</div>
+        <button class="btn btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar
+        </button>
+      </div>
+
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th style="width: 100px;">N° Doc</th>
+            <th style="width: 80px;">Tipo</th>
+            <th style="width: 150px;">Remitente</th>
+            <th>Asunto</th>
+            <th style="width: 90px;">Fecha</th>
+            <th style="width: 90px;">Estado</th>
+            <th style="width: 80px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="doc-num">245/2026</span></td>
+            <td><span class="doc-type ordinario">Ordinario</span></td>
+            <td>Oficina de Partes</td>
+            <td>Solicitud de informe sobre tramite de permiso de construccion</td>
+            <td>07/04/2026</td>
+            <td><span class="status-badge derivado">Derivado</span></td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button class="action-btn" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="doc-num">089/2026</span></td>
+            <td><span class="doc-type memo">Memo</span></td>
+            <td>Admin - Sistemas</td>
+            <td>Memo: Revisar presupuesto departamental</td>
+            <td>07/04/2026</td>
+            <td><span class="status-badge leido">Leido</span></td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button class="action-btn" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="doc-num">156/2026</span></td>
+            <td><span class="doc-type oficio">Oficio</span></td>
+            <td>Secretaria Municipal</td>
+            <td>Oficio: Respuesta a consulta ciudadana sobre zonificacion</td>
+            <td>06/04/2026</td>
+            <td><span class="status-badge recibido">Recibido</span></td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button class="action-btn" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="doc-num">078/2026</span></td>
+            <td><span class="doc-type ordinario">Ordinario</span></td>
+            <td>Direccion de Obras</td>
+            <td>Ordinario: Solicitud de antecedentes para permiso de construccion</td>
+            <td>05/04/2026</td>
+            <td><span class="status-badge terminado">Terminado</span></td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button class="action-btn" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><span class="doc-num">312/2026</span></td>
+            <td><span class="doc-type despacho">Despacho</span></td>
+            <td>Alcaldia</td>
+            <td>Despacho: Aprobacion de presupuesto municipal 2026</td>
+            <td>04/04/2026</td>
+            <td><span class="status-badge archivado">Archivado</span></td>
+            <td>
+              <div class="actions-cell">
+                <button class="action-btn" title="Ver"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button class="action-btn" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="pagination">
+        <div class="pagination-info">Mostrando 1-5 de 47 documentos</div>
+        <div class="pagination-controls">
+          <button class="page-btn">&laquo;</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">4</button>
+          <button class="page-btn">5</button>
+          <button class="page-btn">&raquo;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const root = document.documentElement;
+  const presets = {
+    docflow: { name: 'DocFlow', primary: '#1a56db', primaryDark: '#1240a8', primaryLight: '#e8effc' },
+    villarrica: { name: 'SGD Villarrica', primary: '#166534', primaryDark: '#14532d', primaryLight: '#f0fdf4' },
+    lampa: { name: 'DocFlow Lampa', primary: '#7c3aed', primaryDark: '#5b21b6', primaryLight: '#f5f3ff' },
+    lascondes: { name: 'GesDoc', primary: '#b91c1c', primaryDark: '#991b1b', primaryLight: '#fef2f2' }
+  };
+  function applyPreset(name, chip) {
+    const p = presets[name];
+    if (!p) return;
+    document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    root.style.setProperty('--primary', p.primary);
+    root.style.setProperty('--primary-dark', p.primaryDark);
+    root.style.setProperty('--primary-light', p.primaryLight);
+    document.querySelector('.sidebar-brand-text').textContent = p.name;
+  }
+  function toggleSidebar() { document.querySelector('.sidebar').classList.toggle('collapsed'); }
+  function toggleNested(el) { el.classList.toggle('expanded'); const next = el.nextElementSibling; if (next && next.classList.contains('nav-nested')) { next.classList.toggle('show'); } }
+  function toggleFilters() { document.getElementById('filtersBody').classList.toggle('hidden'); }
+</script>
+</body>
+</html>

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocFlow v3 — Demo 3: Government Formal</title>
+<style>
+  :root {
+    --primary: #1d4ed8;
+    --primary-light: #eff6ff;
+    --primary-dark: #1e3a8a;
+    --accent: #0369a1;
+    --success: #15803d;
+    --warning: #a16207;
+    --danger: #b91c1c;
+    --info: #0284c7;
+    --surface: #ffffff;
+    --bg: #f0f4f8;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+    --topnav-height: 52px;
+    --subnav-height: 44px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--gray-800); font-size: 13px; line-height: 1.5;
+  }
+
+  /* TOP NAV */
+  .topnav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--topnav-height); background: var(--primary-dark);
+    color: white; display: flex; align-items: center; padding: 0 24px;
+    z-index: 100;
+  }
+  .topnav-logo { display: flex; align-items: center; gap: 10px; margin-right: 32px; }
+  .topnav-logo .mark {
+    width: 30px; height: 30px; background: white; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--primary-dark); font-weight: 800; font-size: 14px;
+  }
+  .topnav-logo .name { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .topnav-modules { display: flex; gap: 2px; flex: 1; }
+  .topnav-module {
+    padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: 600;
+    color: rgba(255,255,255,0.7); cursor: pointer; text-decoration: none;
+    transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .topnav-module:hover { background: rgba(255,255,255,0.1); color: white; }
+  .topnav-module.active { background: rgba(255,255,255,0.15); color: white; }
+  .topnav-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .topnav-search {
+    display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12);
+    padding: 6px 14px; border-radius: 4px; font-size: 12px; color: rgba(255,255,255,0.6);
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .topnav-search:hover { background: rgba(255,255,255,0.18); }
+  .top-icon-btn {
+    width: 32px; height: 32px; border-radius: 4px; border: none;
+    background: none; color: rgba(255,255,255,0.7); cursor: pointer;
+    font-size: 16px; display: flex; align-items: center; justify-content: center;
+  }
+  .top-icon-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+  .top-user {
+    display: flex; align-items: center; gap: 8px; padding: 4px 8px;
+    border-radius: 4px; cursor: pointer;
+  }
+  .top-user:hover { background: rgba(255,255,255,0.1); }
+  .top-user-avatar {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .top-user-name { font-size: 12px; font-weight: 600; }
+
+  /* SUB NAV / CONTEXTUAL */
+  .subnav {
+    position: fixed; top: var(--topnav-height); left: 0; right: 0;
+    height: var(--subnav-height); background: white;
+    border-bottom: 2px solid var(--primary);
+    display: flex; align-items: center; padding: 0 24px; gap: 4px;
+    z-index: 90;
+  }
+  .subnav-item {
+    padding: 6px 14px; font-size: 12px; font-weight: 600; color: var(--gray-500);
+    cursor: pointer; border-radius: 4px; text-decoration: none; transition: all 0.15s;
+  }
+  .subnav-item:hover { background: var(--gray-50); color: var(--gray-800); }
+  .subnav-item.active { color: var(--primary); background: var(--primary-light); }
+  .subnav-item .count {
+    background: var(--danger); color: white; font-size: 10px;
+    padding: 1px 5px; border-radius: 8px; margin-left: 4px;
+  }
+  .subnav-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .subnav-dept {
+    font-size: 11px; color: var(--gray-500); background: var(--gray-100);
+    padding: 4px 10px; border-radius: 4px; font-weight: 600;
+  }
+
+  /* MAIN */
+  .main { padding-top: calc(var(--topnav-height) + var(--subnav-height)); }
+  .content { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+
+  /* ALERT BAR */
+  .alert-bar {
+    background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid var(--danger);
+    padding: 10px 16px; border-radius: 4px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px; font-size: 12px;
+  }
+  .alert-bar strong { color: var(--danger); }
+
+  /* STATS COMPACT */
+  .stats-compact { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+  .stat-compact {
+    background: white; border: 1px solid var(--gray-200); border-radius: 4px;
+    padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+  }
+  .stat-compact .stat-num { font-size: 24px; font-weight: 800; color: var(--gray-900); line-height: 1; }
+  .stat-compact .stat-label { font-size: 11px; color: var(--gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .stat-compact .stat-bar { width: 4px; height: 36px; border-radius: 2px; }
+  .stat-compact .stat-bar.red { background: var(--danger); }
+  .stat-compact .stat-bar.green { background: var(--success); }
+  .stat-compact .stat-bar.blue { background: var(--primary); }
+  .stat-compact .stat-bar.yellow { background: var(--warning); }
+  .stat-compact .stat-bar.cyan { background: var(--info); }
+
+  /* GRID */
+  .grid-3 { display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+  /* CARD */
+  .card { background: white; border: 1px solid var(--gray-200); border-radius: 4px; }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--gray-100);
+    background: var(--gray-50);
+  }
+  .card-title { font-size: 12px; font-weight: 700; color: var(--gray-700); text-transform: uppercase; letter-spacing: 0.3px; }
+  .card-action { font-size: 11px; color: var(--primary); text-decoration: none; font-weight: 600; cursor: pointer; }
+  .card-body { padding: 12px 16px; }
+
+  /* TABLE */
+  .table { width: 100%; border-collapse: collapse; }
+  .table th {
+    text-align: left; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--gray-500); padding: 6px 8px;
+    border-bottom: 2px solid var(--gray-200); font-weight: 700; background: var(--gray-50);
+  }
+  .table td { padding: 8px; border-bottom: 1px solid var(--gray-100); font-size: 12px; }
+  .table tr:hover td { background: var(--primary-light); }
+  .table tr:last-child td { border-bottom: none; }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+  .badge-danger { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+  .badge-warning { background: #fffbeb; color: var(--warning); border: 1px solid #fde68a; }
+  .badge-success { background: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; }
+  .badge-info { background: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
+  .badge-gray { background: var(--gray-50); color: var(--gray-600); border: 1px solid var(--gray-200); }
+
+  .link { color: var(--primary); font-weight: 600; text-decoration: none; }
+  .link:hover { text-decoration: underline; }
+
+  /* ACTIVITY COMPACT */
+  .activity-line { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; }
+  .activity-line:not(:last-child) { border-bottom: 1px solid var(--gray-50); }
+  .activity-line .time { color: var(--gray-400); font-size: 11px; min-width: 60px; }
+  .activity-line .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .activity-line .text { color: var(--gray-700); }
+  .activity-line .text strong { color: var(--gray-900); }
+
+  /* DEMO */
+  .demo-label { background: var(--primary-dark); color: white; text-align: center; padding: 10px; font-size: 14px; font-weight: 600; }
+  .demo-sublabel { background: var(--primary-light); color: var(--primary-dark); text-align: center; padding: 6px; font-size: 11px; }
+
+  /* ACCESSIBILITY BADGE */
+  .a11y-badge {
+    position: fixed; bottom: 16px; right: 16px;
+    background: var(--primary-dark); color: white;
+    padding: 8px 12px; border-radius: 4px; font-size: 11px; font-weight: 600;
+    z-index: 200;
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-label">DEMO 3: GOVERNMENT FORMAL — Top Nav + Sidebar Contextual — Densidad Compacta</div>
+<div class="demo-sublabel">Sobrio, accesible WCAG AAA, orientado a gobierno. Inspirado en GOV.UK, ChileAtiende. Maximo dato por pantalla</div>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="topnav-logo">
+    <div class="mark">DF</div>
+    <div class="name">DocFlow</div>
+  </div>
+  <div class="topnav-modules">
+    <a class="topnav-module active">Dashboard</a>
+    <a class="topnav-module">Documentos</a>
+    <a class="topnav-module">Expedientes</a>
+    <a class="topnav-module">Tareas</a>
+    <a class="topnav-module">Firma</a>
+    <a class="topnav-module">Reportes</a>
+    <a class="topnav-module">Admin</a>
+  </div>
+  <div class="topnav-right">
+    <div class="topnav-search">🔍 Buscar... (Ctrl+K)</div>
+    <button class="top-icon-btn">🔔</button>
+    <div class="top-user">
+      <div class="top-user-avatar">GM</div>
+      <div class="top-user-name">G. Mondino</div>
+    </div>
+  </div>
+</nav>
+
+<!-- SUB NAV -->
+<div class="subnav">
+  <a class="subnav-item active">Resumen</a>
+  <a class="subnav-item">Pendientes<span class="count">8</span></a>
+  <a class="subnav-item">Tareas<span class="count">5</span></a>
+  <a class="subnav-item">V°B°<span class="count">2</span></a>
+  <a class="subnav-item">Firma</a>
+  <a class="subnav-item">Vencidos</a>
+  <div class="subnav-right">
+    <div class="subnav-dept">🏢 DEPTO. NORMATIVO</div>
+    <div class="subnav-dept">📅 07 Abril 2026</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="content">
+
+    <!-- ALERT -->
+    <div class="alert-bar">
+      ⚠️ <strong>2 documentos vencidos</strong> requieren atencion inmediata. <a class="link" style="margin-left:auto;">Ver documentos vencidos →</a>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-compact">
+      <div class="stat-compact">
+        <div class="stat-bar red"></div>
+        <div><div class="stat-num">8</div><div class="stat-label">Pendientes</div></div>
+      </div>
+      <div class="stat-compact">
+        <div class="stat-bar green"></div>
+        <div><div class="stat-num">5</div><div class="stat-label">Tareas</div></div>
+      </div>
+      <div class="stat-compact">
+        <div class="stat-bar blue"></div>
+        <div><div class="stat-num">3</div><div class="stat-label">No leidos</div></div>
+      </div>
+      <div class="stat-compact">
+        <div class="stat-bar yellow"></div>
+        <div><div class="stat-num">2</div><div class="stat-label">V° Bueno</div></div>
+      </div>
+      <div class="stat-compact">
+        <div class="stat-bar cyan"></div>
+        <div><div class="stat-num">15</div><div class="stat-label">Este mes</div></div>
+      </div>
+    </div>
+
+    <!-- GRID: DOCS + TAREAS + ACTIVIDAD -->
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Documentos pendientes de respuesta</div>
+          <a class="card-action">Ver todos (8) →</a>
+        </div>
+        <div class="card-body" style="padding:0">
+          <table class="table">
+            <thead><tr><th>#</th><th>Tipo</th><th>Materia</th><th>Origen</th><th>Vence</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr><td><a class="link">9645</a></td><td>Oficio</td><td>Respuesta Contraloria</td><td>Sec. Municipal</td><td><span class="badge badge-danger">Hoy</span></td><td><span class="badge badge-warning">Pendiente</span></td></tr>
+              <tr><td><a class="link">9638</a></td><td>Decreto</td><td>Pago factura aseo</td><td>DAF</td><td><span class="badge badge-danger">Vencido</span></td><td><span class="badge badge-danger">Urgente</span></td></tr>
+              <tr><td><a class="link">9632</a></td><td>Apelacion</td><td>Recurso administrativo</td><td>Normativo</td><td><span class="badge badge-warning">3 dias</span></td><td><span class="badge badge-info">Revision</span></td></tr>
+              <tr><td><a class="link">9628</a></td><td>Memo</td><td>Solicitud feriado</td><td>RRHH</td><td><span class="badge badge-gray">7 dias</span></td><td><span class="badge badge-success">Recibido</span></td></tr>
+              <tr><td><a class="link">9625</a></td><td>Carta</td><td>Convenio colaboracion</td><td>Alcaldia</td><td><span class="badge badge-gray">10 dias</span></td><td><span class="badge badge-info">Firmar</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Tareas pendientes</div>
+          <a class="card-action">Ver todas (5) →</a>
+        </div>
+        <div class="card-body" style="padding:0">
+          <table class="table">
+            <thead><tr><th>Tarea</th><th>Doc</th><th>Fecha</th><th>Prior.</th></tr></thead>
+            <tbody>
+              <tr><td>Revisar y visar decreto</td><td><a class="link">#9638</a></td><td>07/04</td><td><span class="badge badge-danger">Alta</span></td></tr>
+              <tr><td>Redactar respuesta oficio</td><td><a class="link">#9645</a></td><td>07/04</td><td><span class="badge badge-danger">Alta</span></td></tr>
+              <tr><td>Clasificar correspondencia</td><td><a class="link">#9650</a></td><td>08/04</td><td><span class="badge badge-warning">Media</span></td></tr>
+              <tr><td>Archivar expediente</td><td><a class="link">Exp-098</a></td><td>10/04</td><td><span class="badge badge-success">Baja</span></td></tr>
+              <tr><td>Revisar bases licitacion</td><td><a class="link">#9660</a></td><td>12/04</td><td><span class="badge badge-warning">Media</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Actividad</div>
+          <a class="card-action">Ver →</a>
+        </div>
+        <div class="card-body">
+          <div class="activity-line">
+            <span class="time">09:45</span>
+            <span class="dot" style="background:var(--success)"></span>
+            <span class="text"><strong>P. Gonzalez</strong> firmo #9640</span>
+          </div>
+          <div class="activity-line">
+            <span class="time">09:00</span>
+            <span class="dot" style="background:var(--primary)"></span>
+            <span class="text"><strong>M. Rodriguez</strong> envio oficio</span>
+          </div>
+          <div class="activity-line">
+            <span class="time">08:30</span>
+            <span class="dot" style="background:var(--warning)"></span>
+            <span class="text">V°B° solicitado #9638</span>
+          </div>
+          <div class="activity-line">
+            <span class="time">Ayer</span>
+            <span class="dot" style="background:var(--danger)"></span>
+            <span class="text"><strong>Exp-104</strong> vencido</span>
+          </div>
+          <div class="activity-line">
+            <span class="time">Ayer</span>
+            <span class="dot" style="background:var(--info)"></span>
+            <span class="text">Alcaldia archivo 3 docs</span>
+          </div>
+          <div class="activity-line">
+            <span class="time">05/04</span>
+            <span class="dot" style="background:var(--success)"></span>
+            <span class="text">Decreto #9630 aprobado</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPEDIENTES -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Expedientes activos</div>
+          <a class="card-action">Ver todos →</a>
+        </div>
+        <div class="card-body" style="padding:0">
+          <table class="table">
+            <thead><tr><th>Expediente</th><th>Estado</th><th>Docs</th><th>Vence</th><th>Avance</th></tr></thead>
+            <tbody>
+              <tr><td><a class="link">Licitacion Aseo</a></td><td><span class="badge badge-warning">Proceso</span></td><td>12</td><td>15/04</td><td>75%</td></tr>
+              <tr><td><a class="link">Convenio Salud</a></td><td><span class="badge badge-info">Revision</span></td><td>8</td><td>20/04</td><td>50%</td></tr>
+              <tr><td><a class="link">Subsidios Q1</a></td><td><span class="badge badge-danger">Vencido</span></td><td>23</td><td>01/04</td><td>90%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">V° Bueno pendientes de mi aprobacion</div>
+          <a class="card-action">Ver todos →</a>
+        </div>
+        <div class="card-body" style="padding:0">
+          <table class="table">
+            <thead><tr><th>Doc</th><th>Tipo</th><th>Solicitante</th><th>Fecha</th><th>Accion</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><a class="link">#9638</a></td><td>Decreto</td><td>M. Rodriguez</td><td>06/04</td>
+                <td><button style="background:var(--success);color:white;border:none;padding:3px 10px;border-radius:3px;font-size:11px;font-weight:600;cursor:pointer;margin-right:4px">Aprobar</button><button style="background:var(--danger);color:white;border:none;padding:3px 10px;border-radius:3px;font-size:11px;font-weight:600;cursor:pointer">Rechazar</button></td>
+              </tr>
+              <tr>
+                <td><a class="link">#9655</a></td><td>Bases</td><td>P. Gonzalez</td><td>07/04</td>
+                <td><button style="background:var(--success);color:white;border:none;padding:3px 10px;border-radius:3px;font-size:11px;font-weight:600;cursor:pointer;margin-right:4px">Aprobar</button><button style="background:var(--danger);color:white;border:none;padding:3px 10px;border-radius:3px;font-size:11px;font-weight:600;cursor:pointer">Rechazar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="a11y-badge">♿ WCAG AAA</div>
+
+</body>
+</html>
