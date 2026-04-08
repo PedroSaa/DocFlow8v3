@@ -1,4 +1,4 @@
-# DocFlow v3 - Sistema de Gestión Documental Municipal
+# DocFlow v3 - Sistema de Gestión Documental
 
 Rediseño completo del sistema de gestión documental DocFlow para competir en licitaciones municipales chilenas.
 
