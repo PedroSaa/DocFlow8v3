@@ -1,8 +1,10 @@
-# ESPECIFICACIONES TECNICAS — DocFlow8v3
+# ESPECIFICACIONES TÉCNICAS — DocFlow 8 Infinity
 
 **Fecha**: Abril 2026  
 **Estado**: En desarrollo  
-**Proyecto**: DocFlow8v3 - Sistema de Gestion Documental Municipal
+**Proyecto**: DocFlow 8 Infinity - Sistema de Gestión Documental Municipal
+**Versión**: 8.0 (Infinity)
+**Origen**: Basado en DocFlow 6 (manual legacy 2018)
 
 ---
 
@@ -267,36 +269,110 @@ MFACodes
 | Módulo | Descripción | CRUD |
 |--------|-------------|------|
 | **Dashboard** | KPIs, gráficos, accesos rápidos | Lectura |
-| **Bandeja de Entrada** | Documentos recibidos, derivados | Lectura/Escritura |
-| **Expedientes** | Gestión de carpetas de documentos | Completo |
-| **Documentos** | Crear/editar/ver documentos | Completo |
+| **Bandeja de Entrada** | Documentos recibidos, derivados, pendientes de acción | Lectura/Escritura |
+| **Expedientes** | Gestión de carpetas de documentos agrupados por proyecto/hito | Completo |
+| **Archivadores** | Organización física de documentos (año/mes/caja) | Completo |
+| **Documentos** | Crear/editar/ver documentos con editor integrado | Completo |
 | **Tareas** | Gestión de tareas asignadas | Completo |
-| **Consultas** | Búsqueda avanzada de docs/tareas | Lectura |
-| **Reportes** | Gráficos y estadísticas | Lectura |
-| **Archivadores** | Gestión física de documentos | Completo |
+| **Consultas** | Búsqueda avanzada de documentos y tareas | Lectura |
+| **Reportes** | Gráficos, estadísticas y auditoría | Lectura |
 | **Administración** | Configuración del sistema | Completo |
+
+### 4.2 Módulos Especiales (del Manual Legacy)
+
+| Módulo | Descripción | Funcionalidad |
+|--------|-------------|---------------|
+| **Editor de Documentos** | Editor de texto para redactar documentos | Crear documentos internos (Memo, Circular, Despacho) |
+| **Firma Digital** | Firma electrónica avanzada (FirmaGob) | Firma en editor → convierte a PDF certificado con registro |
+| **V° Bueno (Aprobaciones)** | Workflow de aprobación jerárquica | Revisor → Aprobador → Firmante |
+| **Oficina de Partes** | Gestión de despacho exterior | Único módulo autorizado para enviar documentos fuera de la organización |
+| **Auditoría** | Trazabilidad completa | Registro de todas las acciones sobre documentos |
+
+### 4.3 Acciones sobre Documentos
+
+Del manual legacy, las acciones disponibles en la Bandeja de Entrada:
+
+| Acción | Descripción |
+|--------|-------------|
+| **Recibir** | Aceptar un documento derivado |
+| **Derivar** | Enviar documento a otro usuario/unidad |
+| **Reenviar** | Reenviar a otra persona manteniendo historial |
+| **Devolver** | Devolver al remitente original |
+| **Archivar** | Mover a archivador físico |
+| **Anular** | Cancelar documento (solo admin) |
+| **Destacar** | Marcar como importante/urgente |
+| **Firmar** | Aplicar firma digital (PDF certificado) |
 
 ### 4.2 Tipos de Documentos (Configurables por Organización)
 
-Los siguientes tipos son **ejemplos por defecto** — cada organización puede crear, modificar o eliminar tipos según sus necesidades:
+Los siguientes tipos son los **tipos base del sistema** (del manual legacy) — cada organización puede crear, modificar o eliminar tipos según sus necesidades:
 
-| Tipo | Categoría por Defecto | Descripción |
-|------|----------------------|-------------|
-| **Ordinario** | Generado Externo | Documentos oficiales externos |
-| **Memo** | Generado Interno | Comunicación interna |
-| **Oficio** | Generado Externo | Comunicaciones formales |
-| **Despacho** | Generado Interno | Comunicaciones desde Alcaldía |
-| **Circular** | Generado Interno | Comunicados generales |
-| **Resolución** | Generado Externo | Decisiones administrativas |
-| **Recibido** | Recibido Externo | Documentos externos recibidos |
+#### Tipos de Documentos (Base del Sistema)
+
+| Tipo | Código | Categoría | Descripción | Requiere Firma |
+|------|--------|-----------|-------------|----------------|
+| **Ordinario** | ORD | SALEN | Documentos oficiales externos | ✅ Sí |
+| **Memo** | MEM | CIRCULAN | Comunicación interna | ❌ No |
+| **Oficio** | OFI | SALEN | Comunicaciones formales externas | ✅ Sí |
+| **Despacho** | DES | CIRCULAN | Comunicaciones desde Alcaldía | ✅ Sí |
+| **Circular** | CIR | CIRCULAN | Comunicados generales internos | ❌ No |
+| **Resolución** | RES | SALEN | Decisiones administrativas | ✅ Sí |
+| **Recibido** | REC | LLEGAN | Documentos externos recibidos | ❌ No |
+| **Partes** | PAR | LLEGAN | Documentos registrados en Oficina de Partes | ❌ No |
+| **Informe** | INF | CIRCULAN | Informes técnicos | ✅ Sí |
+| **Carta** | CAR | SALEN | Comunicaciones formales | ✅ Sí |
 
 > **Nota**: Los tipos de documentos son **100% configurables**. Cada organización puede definir sus propios tipos y asociarlos a los flujos necesarios.
 
 #### Flujo de Documentos
 
-Todo documento puede seguir uno de estos 3 flujos:
+Todo documento sigue uno de estos 3 flujos, según su origen y destino:
 
 ```
+                    ┌─────────────────────────┐
+                    │   REGISTRO DOCUMENTO    │
+                    └───────────┬─────────────┘
+                                │
+           ┌─────────────────────┼─────────────────────┐
+           │                     │                     │
+           ▼                     ▼                     ▼
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│    LLEGAN       │  │   CIRCULAN     │  │     SALEN       │
+│   (Exterior →   │  │   (Interno →   │  │   (Interior →  │
+│    Interior)    │  │    Interno)    │  │    Exterior)    │
+│                 │  │                 │  │                 │
+│ - Recibido      │  │ - Memo          │  │ - Oficio        │
+│ - Partes        │  │ - Despacho      │  │ - Resolución   │
+│ - Externos      │  │ - Circular      │  │ - Ordinario    │
+│                 │  │ - Informe       │  │ - Carta         │
+│                 │  │                 │  │                 │
+│ [llegan a la    │  │ [circulan solo  │  │ [se envían al   │
+│  organización]  │  │  dentro]       │  │   exterior]     │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+```
+
+#### Flujo de Documento de SALIDA (del Manual Legacy)
+
+Cuando un documento "SALEN" (se envía al exterior), sigue este flujo:
+
+```
+┌─────────┐    ┌──────────┐    ┌─────────┐    ┌─────────────┐    ┌────────────────┐    ┌─────────────┐
+│ Crear   │───►│ Derivar  │───►│ Recibir │───►│ Firmar      │───►│ Oficina de    │───►│ Despacho    │
+│         │    │ (tramite │    │         │    │ (electrónica│    │ Partes        │    │ (físico o   │
+│ Documento│    │ interno) │    │         │    │ → PDF certif)│    │               │    │  electrónico)│
+└─────────┘    └──────────┘    └─────────┘    └─────────────┘    └────────────────┘    └─────────────┘
+                                                                                            
+   1              2              3             4                5                   6                    
+```
+
+1. **Crear**: Redactar documento en editor
+2. **Derivar**: Trámite interno (enviar a revisión/aprobación)
+3. **Recibir**: Aceptar en bandeja del receptor
+4. **Firmar**: Firmar electrónicamente → se convierte en PDF certificado
+5. **Oficina de Partes**: Único punto de despacho exterior
+6. **Despacho**: Envío físico o electrónico al destinatario
+
+> **Nota importante**: Solo **Oficina de Partes** puede realizar el despacho al exterior. Esto es un control de seguridad del sistema legacy que se mantiene en DocFlow 8 Infinity.
                     ┌─────────────────────────┐
                     │   REGISTRO DOCUMENTO    │
                     └───────────┬─────────────┘
@@ -388,14 +464,57 @@ DocumentTypes
 ### 4.4 OCR de Imágenes
 
 | Característica | Descripción |
-|-----------------|-------------|
+|----------------|-------------|
 | **Input** | Imágenes (JPG, PNG, TIFF, PDF escaneado) |
 | **Proceso** | Detección de texto con Tesseract/Azure Vision |
 | **Output** | Texto extraído + PDF con capa de texto |
 | **Idiomas** | Español (predeterminado), inglés |
 | **Almacenamiento** | Guardar imagen original + texto extraído |
 
-### 4.5 Módulo de Administración (Configuración General)
+### 4.5 Editor de Documentos y Firma Digital
+
+#### Editor de Documentos
+
+El editor de texto integrado permite:
+- Redactar documentos internos (Memo, Circular, Despacho, Informe)
+- Formateo básico (negrita, cursiva, listas, tablas)
+- Insertar variables dinámicas (fecha, número de cite, remitente)
+- Vista previa antes de guardar
+- Conversión automática a PDF para firma
+
+#### Firma Digital (FirmaGob - Chile)
+
+Del manual legacy, el sistema de firma electrónica funciona así:
+
+1. **Firma en Editor**: El usuario firma el documento dentro del editor de texto
+2. **Conversión a PDF**: El documento firmado se convierte en PDF certificado
+3. **Certificación**: El PDF incluye certificación digital que garantiza:
+   - Integridad del documento (no fue modificado después de firmado)
+   - Identidad del firmante
+   - Fecha y hora de la firma
+4. **Registro**: Cada firma queda registrada en el sistema de auditoría
+
+```
+┌─────────────┐    ┌──────────────┐    ┌───────────────┐    ┌─────────────┐
+│   Firmar    │───►│  Convertir   │───►│   Certificar  │───►│  Registrar  │
+│  (Editor)   │    │  a PDF       │    │  (FirmaGob)   │    │  (Auditoría)│
+└─────────────┘    └──────────────┘    └───────────────┘    └─────────────┘
+```
+
+**Tabla de Registro de Firmas** (nueva):
+```sql
+DocumentSignatures
+├── Id (GUID, PK)
+├── DocumentId (FK)
+├── UserId (FK)
+├── SignedAt (datetime)
+├── SignatureHash (string)      -- Hash único de la firma
+├── CertificateInfo (json)       -- Info del certificado
+├── IpAddress (string)
+└── SignatureType (enum)         -- electronic, approved, initials
+```
+
+### 4.6 Módulo de Administración (Configuración General)
 
 Este módulo es exclusivo para administradores del sistema y contiene toda la parametrización configurable:
 
@@ -427,7 +546,7 @@ Este módulo es exclusivo para administradores del sistema y contiene toda la pa
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### 4.5.1 Organizaciones (Tenants)
+#### 4.6.1 Organizaciones (Tenants)
 
 | Campo | Descripción |
 |-------|-------------|
@@ -440,7 +559,7 @@ Este módulo es exclusivo para administradores del sistema y contiene toda la pa
 | Sidebar Mode | dark / light / color |
 | Estado | Activo/Inactivo |
 
-#### 4.5.2 Correlativos
+#### 4.6.2 Correlativos
 
 | Campo | Descripción |
 |-------|-------------|
@@ -450,7 +569,7 @@ Este módulo es exclusivo para administradores del sistema y contiene toda la pa
 | Año | Año del correlativo |
 | Formato | Personalizable (ej: {PREFIJO}{AÑO}-{NUMERO}) |
 
-#### 4.5.3 Plantillas
+#### 4.6.3 Plantillas
 
 | Campo | Descripción |
 |-------|-------------|
@@ -459,7 +578,7 @@ Este módulo es exclusivo para administradores del sistema y contiene toda la pa
 | Plantilla | Contenido (HTML/texto con variables) |
 | Variables | Lista de variables disponibles |
 
-#### 4.5.4 Theming Dinámico
+#### 4.6.4 Theming Dinámico
 
 Cada organización puede configurar su propia apariencia:
 
@@ -479,11 +598,146 @@ TenantThemeSettings
 └── Variables (json)              -- Variables CSS personalizadas
 ```
 
+### 4.7 Bandeja de Entrada
+
+La Bandeja de Entrada muestra los documentos recibidos según filtros de fecha. Es el punto central de acción sobre documentos.
+
+#### Filtros Disponibles
+| Filtro | Descripción |
+|--------|-------------|
+| **Fechas** | Rango de fechas (filtro inicial) |
+| **Tipo de Documento** | Ordinario, Memo, Oficio, etc. |
+| **Número** | Número correlativo del documento |
+| **Materia** | Contenido/asunto del documento |
+| **Correlativo** | Código único del documento |
+| **Otros filtros** | Ocultos, expandibles según necesidad |
+
+#### Acciones sobre Documentos (Bandeja)
+| Acción | Descripción |
+|--------|-------------|
+| **Recibir** | Aceptar documento derivado (cambia estado a Recibido) |
+| **Devolver** | Devolver al remitente (solo si estado = No Recibido) |
+| **Anular** | Cancelar documento (solo si estado = Ingresado) |
+| **Destacar** | Marcar como importante para atención permanente |
+| **Archivar** | Asociar a un archivador físico |
+
+#### Indicadores de Documento (Columnas T, I, A, R, O)
+| Indicador | Significado |
+|-----------|--------------|
+| **T** | El documento tiene Tareas asociadas |
+| **I** | El documento tiene Imagen escaneada |
+| **A** | El documento tiene Adjuntos |
+| **R** | El documento tiene Referencias |
+| **O** | El documento tiene Observaciones |
+
+### 4.8 Expedientes
+
+Los Expedientes permiten agrupar documentos relacionados por proyecto/hito.
+
+#### Funcionalidades de Expedientes
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| **Crear Expediente** | Nombre, número/catalogamiento, descripción detallada |
+| **Hitos** | Puntos de control para seguimiento del expediente |
+| **Compartir** | Autorizar visualización a otros usuarios |
+| **Estados** | Pendiente (inicial), en proceso, cerrado |
+
+> **Restricciones**: No se pueden eliminar expedientes que contengan información ni aquellos donde no se es el autor.
+
+### 4.9 Tareas
+
+Las tareas son acciones asociadas a documentos que requieren seguimiento.
+
+#### Creación de Tareas
+| Campo | Descripción |
+|-------|-------------|
+| **Nivel Responsable** | Departamento/unidad responsable (selección de lista autorizada) |
+| **Usuario Ejecutor** | Persona que debe ejecutar la tarea |
+| **Glosa de Tarea** | Acción predefinida + observación libre |
+| **Fecha de Vencimiento** | Plazo para completar la tarea |
+| **Responder con Documento** | Genera documento de respuesta (solo en docs recibidos) |
+
+#### Estados de Tareas
+- **Pendiente**: Tarea asignada sin completar
+- **Cumplida**: Tarea completada por ejecutor
+- **Semicumplida**: Tarea parcialmente completada
+
+> **IMPORTANTE**: Si se crea una tarea y el documento no se envía, la tarea tampoco se envía. Cada tarea va asociada a un documento.
+
+### 4.10 Archivadores
+
+Organización física de documentos en almacenamiento estructurado.
+
+#### Crear Archivador
+| Campo | Descripción |
+|-------|-------------|
+| **Año** | Año del archivador |
+| **Mes** | Mes del archivador |
+| **Caja** | Número de caja identificador |
+| **Descripción** | Descripción del contenido |
+
+#### Estado de Archivado
+Cuando un documento se archiva, su estado cambia de "Recibido" a "Archivado", indicando el archivador asociado.
+
+### 4.11 Reportes y Estadísticas
+
+Módulo de generación de informes y estadísticas del sistema.
+
+#### Tipos de Reportes
+| Reporte | Descripción |
+|---------|-------------|
+| **Imprimir por Rango de Correlativos** | Documentos por rango de fechas, tipo y correlativos |
+| **Listado Despacho Interno por Depto.** | Hoja de distribución interna |
+| **Listado Diario y Mensual por Departamento** | Estadísticas por fecha y departamento |
+| **Listado Diario y Mensual por Formato** | Estadísticas por tipo de documento |
+| **Imprimir Documentos No Recibidos** | Relación de documentos sin recibir entre fechas |
+
+### 4.12 Flujo Completo de Documento de SALIDA
+
+Resumen del flujo completo de un documento que sale al exterior:
+
+```
+┌─────────────┐    ┌──────────┐    ┌─────────┐    ┌─────────────┐    ┌────────────────┐    ┌─────────────┐
+│   CREAR     │───►│ DERIVAR  │───►│ RECIBIR │───►│   FIRMAR    │───►│    OFICINA    │───►│  DESPACHO   │
+│ Documento   │    │ (trámite │    │         │    │ (electrónica│    │    DE PARTES   │    │  EXTERIOR   │
+│ (Editor)   │    │ interno) │    │         │    │ → PDF certif)│    │ (único punto │    │ (físico o    │
+│             │    │           │    │         │    │             │    │  de despacho)│    │  electrónico)│
+└─────────────┘    └──────────┘    └─────────┘    └─────────────┘    └────────────────┘    └─────────────┘
+      1                2              3               4                  5                    6
+```
+
+1. **Crear**: Redactar documento en editor con plantilla
+2. **Derivar**: Enviar a revisión/trámite interno
+3. **Recibir**: Receptor acepta el documento
+4. **Firmar**: Firma electrónica → PDF certificado
+5. **Oficina de Partes**: Único módulo autorizado para despacho exterior
+6. **Despacho**: Envío físico o electrónico al destinatario
+
+> **Nota importante**: Solo **Oficina de Partes** puede realizar el despacho al exterior. Esto es un control de seguridad del sistema legacy.
+
+### 4.13 Flujos Especializados (Configurables)
+
+Del sistema legacy, existen 9 flujos especializados que pueden configurarse en DocFlow 8 Infinity:
+
+| # | Flujo | Descripcion | Participantes | Cadena V°B° |
+|---|-------|-------------|---------------|-------------|
+| 1 | **Decreto Seccion 1 y 2 Pagos** | Decretos de pago Seccion 1 y 2 |DAF, TESORERIA | Revisor → Aprobador → Firmante |
+| 2 | **Decreto Subsidios** | Decretos de subsidios | ASISTENCIA, SECRETARIA | Revisor → Aprobador → Firmante |
+| 3 | **Pago Facturas** | Workflow de aprobacion de facturas | PROVEEDOR, DAF, ADMIN | Recepcion → Revision → V°B° → Pago |
+| 4 | **Decretos Personal** | Decretos de personal nombra/movilidad | RRHH, SECRETARIA, ALCALDIA | Revisor → Aprobador → Firmante |
+| 5 | **Visacion Bases Licitacion** | Revision de bases de licitacion | COMPRAS, LEGAL, ADMIN | Revision → V°B° → Publicacion |
+| 6 | **Transparencia Activa** | Publicacion proactive de info | TODOS | Revisado → Publicar |
+| 7 | **Transparencia Pasiva/SAI** | Respuesta a solicitudes ciudadanas | OIRS, AREA RESP | Recepcion → Derivacion → Respuesta |
+| 8 | **Tramitacion Libre** | Tramites no categorizados | VARIABLE | Configurable |
+| 9 | **Oficios DocDigital** | Tramites desde bandeja DocDigital | GOB, AREA RESP | Recepcion → Clasificacion → Derivacion |
+
+> **Nota**: En DocFlow 8 Infinity estos flujos son **configurables** via el motor de workflows, no hardcoded como en el legacy. Cada organizacion puede crear sus propios flujos.
+
 ---
 
 ## 5. API PUBLICA
 
-### 4.1 Endpoints Publicos (Sin autenticacion JWT)
+### 5.1 Endpoints Publicos (Sin autenticacion JWT)
 
 | Metodo | Endpoint | Descripcion |
 |--------|----------|-------------|
@@ -745,17 +999,188 @@ docflow-frontend/
 - Token endpoint: `https://accounts.claveunica.gob.cl/token`
 - Scope: `openid run run identifiers`
 
-### 7.2 FirmaDigital (FirmaGob -chile)
+### 7.2 FirmaDigital (FirmaGob - Chile)
 
-- Integracion con servicio de firma digital
-- Endpoint por definir (propuesta: `POST /api/v1/signatures/sign`)
-- Soporte para firma de documentos PDF
+FirmaGob es la plataforma de Firma Electrónica Avanzada del Gobierno de Chile, gratuita para instituciones públicas.
+
+#### Roles en FirmaGob
+
+| Rol | Descripcion | Funciones |
+|-----|-------------|-----------|
+| **Operador** | Administrador de la institucion | Gestionar usuarios, solicitar habilitacion, configurar certificados |
+| **Ministro de Fe** | Validador de certificados | Aprobar/rechazar solicitudes de certificados, autocertificacion |
+| **Funcionario/Autoridad** | Firmante de documentos | Solicitar certificados, firmar documentos |
+
+#### Tipos de Certificados
+
+| Tipo | Descripcion | Uso |
+|------|-------------|-----|
+| **Propósito General** | Firma con 2do factor (QR) | Firmas individuales, requiere escanear QR |
+| **Propósito Desatendido** | Firma automatica sin interaccion | Integraciones API, foliado automatico |
+| **Autocertificacion** | Certificado del propio Ministro de Fe | Firmar como Ministro de Fe |
+
+#### Integracion API FirmaGob
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│    DocFlow   │────►│   FirmaGob   │────►│  Certificado │
+│   (API)      │     │   (Firma)    │     │   (PDF)      │
+└──────────────┘     └──────────────┘     └──────────────┘
+```
+
+| Endpoint | Descripcion |
+|----------|-------------|
+| `POST /api/v1/signatures/sign` | Firmar documento con certificado |
+| `POST /api/v1/signatures/batch` | Firmar multiples documentos |
+| `GET /api/v1/certificates/status` | Consultar estado de certificado |
+| `POST /api/v1/certificates/revoke` | Revocar certificado |
+
+#### Flujo de Habilitacion (Institucion)
+
+1. Tramitar documento "Modelo Aceptacion Condiciones de Uso"
+2. Designar Operador y Ministro de Fe
+3. Solicitar habilitacion a Secretaria de Gobierno Digital
+4. Aprobacion e integracion de API
+5. Registrar firmantes (funcionarios)
+6. Aprobar certificados (Ministro de Fe)
+7. Listo para usar
+
+> **Nota para DocFlow 8 Infinity**: La integracion con FirmaGob permite firma electronica avanzada en documentos PDF, convirtiendo el documento en PDF certificado con validez legal.
 
 ### 7.3 QR de Documento
 
 - Generacion de QR con hash del documento
 - QR contiene: URL publica de verificacion
 - Verificacion: `GET /api/v1/public/{tenant}/verify/{qrHash}`
+
+### 7.4 DocDigital del Gobierno (Bandeja Electrónica)
+
+**DocDigital** es la plataforma de comunicaciones oficiales del Gobierno de Chile, provista por la Secretaría de Gobierno Digital.
+
+**Marco Legal**: Ley N° 21.180 de Transformación Digital establece que los Órganos de la Administración del Estado deben registrar las comunicaciones oficiales mediante plataformas digitales.
+
+#### Funciones de DocDigital v3
+
+| Proceso | Descripcion |
+|---------|-------------|
+| **Firma y distribución** | Firma electrónica y distribución de documentos firmados |
+| **Comunicaciones internas** | Comunicación entre unidades dentro de la institución |
+| **Comunicaciones oficiales** | Gestión entre distintos Órganos del Estado |
+
+#### Integracion con DocDigital
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  Gobierno    │────►│   DocFlow    │────►│  Bandeja     │
+│  (DocDigital)│     │  (Receptor)  │     │  DocDigital  │
+└──────────────┘     └──────────────┘     └──────────────┘
+```
+
+| Caracteristica | Descripcion |
+|----------------|-------------|
+| **Protocolo** | API REST / WebService |
+| **Base URL** | `https://api.doc.digital.gob.cl` |
+| **Frecuencia** | Polling cada 5 minutos (configurable) |
+| **Documentos** | Oficios, resoluciones, cartas |
+| **Tipo** | Documentos escaneados/digitalizados |
+| **Almacenamiento** | Imagen original + metadata |
+
+#### Flujo de Recepcion DocDigital
+
+1. DocFlow consulta Bandeja Electronica del Gob.
+2. Descarga documentos nuevos via API
+3. Clasifica por tipo/origen
+4. Notifica al usuario receptor
+5. Registra en historial
+6. Genera comprobante de trazabilidad
+
+#### Roles en DocDigital
+
+| Perfil | Descripcion |
+|--------|-------------|
+| **Administrador Principal** | Gestionar usuarios, permisos, registrar oficinas de partes |
+| **Secretaría Virtual** | Gestionar documentación saliente y recibir/derivar documentos |
+| **Firmante** | Confección, carga, visar, firmar, enumerar documentos |
+| **Receptor** | Recibir y derivar documentos |
+
+> **Nota**: DocFlow 8 Infinity puede integrarse como receptor de DocDigital del Gobierno para recibir comunicaciones oficiales de otros organismos públicos.
+
+### 7.5 DTE - Facturas Electronicas (SII)
+
+Integracion con el Servicio de Impuestos Internos (SII) para procesar facturas electronicas:
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│    SII       │────►│   DocFlow    │────►│   Bandeja    │
+│  (DTE/Facturas)│     │  (Procesador)│     │   Facturas   │
+└──────────────┘     └──────────────┘     └──────────────┘
+```
+
+| Caracteristica | Descripcion |
+|----------------|-------------|
+| **Protocolo** | API SII (REST/SOAP) |
+| **Tipo Docs** | Facturas, Boletas, Notas Credito/Debito |
+| **Validacion** | Schema XML DTE |
+| **Almacenamiento** | XML original + PDF timbrado |
+
+**Funcionalidades**:
+- Recepcion automatica de DTE
+- Validacion de firma electronica (timbre)
+- Registro en bandeja de facturas
+- Vincular a expediente/contrato
+- Workflow de aprobacion (V°B°, pago)
+
+### 7.6 OIRS - Transparencia y Atencion Ciudadana
+
+Integracion con modulo OIRS (Oficina de Informaciones, Reclamos y Sugerencias) para transparencia pasiva:
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Portal     │────►│   DocFlow     │────►│    OIRS      │
+│  Ciudadano   │     │  (Backend)    │     │  (Tramites)   │
+└──────────────┘     └──────────────┘     └──────────────┘
+```
+
+| Caracteristica | Descripcion |
+|----------------|-------------|
+| **DECRETO** | 968 (Transparencia) |
+| **Portal** | Consulta publica de tramites |
+| **SAI** | Sistema de Atencion Integral |
+| **Plazo** | 20 dias habiles (Ley de Transparencia) |
+| **Notificacion** | Email/SMS al solicitante |
+
+**Funcionalidades del Portal Ciudadano**:
+- Consulta estado de tramites
+- OIRS digital (reclamos/sugerencias)
+- Verificacion QR de documentos
+- Login con ClaveUnica
+- Notificaciones push
+
+### 7.7 Portal Ciudadano (SPA Externo)
+
+Aplicacion web publica separada para atencion a ciudadanos:
+
+| Modulo | Descripcion |
+|--------|-------------|
+| **Consulta Tramites** | Buscar por codigo/RUT |
+| **OIRS Digital** | Enviar reclamos online |
+| **Verificacion QR** | Validar autenticidad documentos |
+| **Noticias/Avisos** | Publicaciones oficiales |
+| **Login ClaveUnica** | Autenticacion gov. chile |
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   PORTAL CIUDADANO                          │
+│                  (app.docflow.cl/portal)                    │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
+│  │  Consulta   │  │   OIRS      │  │   QR        │         │
+│  │  Tramites   │  │   Digital   │  │  Verificar  │         │
+│  └─────────────┘  └─────────────┘  └─────────────┘         │
+│                                                             │
+│  [Iniciar Sesion con ClaveUnica]                           │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -777,6 +1202,133 @@ docflow-frontend/
 - **Indexing**: Indices en columnas de filtro frecuentes
 - **Lazy Loading**: Componentes y modulos bajo demanda
 - **Compression**: Gzip/Brotli para respuestas JSON
+
+### 7.8 Modulo de Lectura de Email y Canalizacion a DocFlow
+
+Este modulo permite leer correos electronicos desde cuentas institucionales y canalizar los documentos adjuntos al workflow de DocFlow.
+
+#### Arquitectura del Modulo
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   Servidor   │────►│   DocFlow    │────►│   Workflow   │
+│   Email      │     │  (lector)    │     │   DocFlow    │
+│  (IMAP)      │     │              │     │              │
+└──────────────┘     └──────────────┘     └──────────────┘
+```
+
+#### Protocolos Soportados
+
+| Protocolo | Descripcion | Puerto default |
+|-----------|-------------|----------------|
+| **IMAP** | Lectura y sincronizacion de bandeja | 993 (SSL) |
+| **POP3** | Descarga de correos (menos moderno) | 995 (SSL) |
+| **SMTP** | Envio de notificaciones | 587 (TLS) |
+
+#### Configuracion de Cuentas
+
+| Campo | Descripcion |
+|-------|-------------|
+| **Servidor** | hostname del servidor email (imap.gmail.com, etc.) |
+| **Puerto** | puerto del servicio |
+| **Usuario** | email completo o nombre de usuario |
+| **Contrasena** | contrasena o App Password |
+| **SSL/TLS** | habilitar cifrado |
+| **Carpeta** | carpeta a monitorear (INBOX, etc.) |
+
+#### Flujo de Procesamiento
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Conectar  │───►│  Descargar  │───►│  Analizar   │───►│  Clasificar │
+│   a IMAP    │    │   emails    │    │  contenido  │    │   y validar │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+                                                               │
+                                                               ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  Notificar  │◄───│  Crear      │◄───│  Adjuntos   │◄───│  Crear      │
+│  usuario    │    │  documento  │    │  a DocFlow  │    │  registro   │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+```
+
+1. **Conectar**: Autenticacion IMAP/SSL al servidor
+2. **Descargar**: Obtener emails no leidos desde carpeta configurada
+3. **Analizar**: Extraer remitente, asunto, cuerpo, adjuntos
+4. **Clasificar**: Validar si es documento oficial (por remitente, asunto, adjuntos)
+5. **Crear Registro**: Crear documento tipo "Recibido" en DocFlow
+6. **Adjuntos**: Guardar archivos adjuntos en DocFlow
+7. **Notificar**: Enviar notificacion al usuario/area destino
+
+#### Reglas de Clasificacion
+
+| Regla | Descripcion | Ejemplo |
+|-------|-------------|---------|
+| **Por remitente** | Dominios autorizados | @municipalidad.cl, @gob.cl |
+| **Por asunto** | Palabras clave | "Oficio", "Resolucion", "Carta" |
+| **Por adjunto** | Tipos de archivo validos | PDF, DOCX, XLSX |
+| **Por exclusion** | Ignorar emails | newsletters, spam |
+
+#### Tipos de Documentos Generados
+
+| Tipo Origen | Categoria | Descripcion |
+|-------------|-----------|-------------|
+| **Email Recibido** | LLEGAN | Email convertido a documento |
+| **Email con Adjunto** | LLEGAN | Email + archivos adjuntos |
+
+#### Funcionalidades Adicionales
+
+| Funcionalidad | Descripcion |
+|---------------|-------------|
+| **Polling automatico** | Verificar bandeja cada X minutos |
+| **Marcado como procesado** | No reprocesar emails ya canalizados |
+| **Notificaciones** | Email/SMS al receptor |
+| **Historial** | Registro de todos los emails procesados |
+| **Filtros avanzados** | Reglas personalizadas por usuario |
+
+#### API Endpoints
+
+| Metodo | Endpoint | Descripcion |
+|--------|----------|-------------|
+| GET | `/api/v1/email/accounts` | Listar cuentas configuradas |
+| POST | `/api/v1/email/accounts` | Agregar cuenta email |
+| DELETE | `/api/v1/email/accounts/{id}` | Eliminar cuenta |
+| POST | `/api/v1/email/accounts/{id}/test` | Probar conexion |
+| GET | `/api/v1/email/accounts/{id}/logs` | Ver historial de procesamiento |
+| POST | `/api/v1/email/process` | Procesar manualmente nuevos emails |
+
+#### Tabla de Configuracion
+
+```sql
+-- Cuentas de email configuradas
+EmailAccounts
+├── Id (GUID, PK)
+├── TenantId (FK)
+├── Email (string)              -- usuario@dominio.com
+├── DisplayName (string)       -- "Cuenta Oficial"
+├── Server (string)            -- imap.gmail.com
+├── Port (int)                 -- 993
+├── UseSSL (bool)              -- true
+├── Folder (string)            -- INBOX
+├── Username (string)
+├── PasswordEncrypted (string)
+├── IsActive (bool)
+├── PollingIntervalMinutes (int) -- 5
+├── LastSyncAt (datetime)
+└── CreatedAt (datetime)
+
+-- Reglas de clasificacion
+EmailRules
+├── Id (GUID, PK)
+├── EmailAccountId (FK)
+├── RuleType (enum)            -- sender, subject, attachment, exclude
+├── Pattern (string)           -- regex o texto
+├── Action (string)           -- create_document, ignore, notify
+├── DocumentTypeId (FK, nullable)
+├── UserId (FK, nullable)     -- usuario destino
+└── IsActive (bool)
+```
+
+> **Nota**: Este modulo permite integrar cuentas de email institucionales (Gmail, Outlook, Office 365, servidores propios) y canalizar automaticamente los documentos recibidos al workflow de DocFlow.
 
 ---
 
