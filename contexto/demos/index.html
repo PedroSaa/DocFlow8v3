@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocFlow v3 — Demo Central</title>
+<style>
+  :root {
+    --primary: #1a56db;
+    --primary-light: #e8effc;
+    --primary-dark: #1240a8;
+    --success: #0d9f6e;
+    --success-light: #ecfdf5;
+    --warning: #e3a008;
+    --danger: #e02424;
+    --danger-light: #fef2f2;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--gray-900); color: var(--gray-800); font-size: 14px; min-height: 100vh; }
+
+  .demo-container { max-width: 1400px; margin: 0 auto; padding: 40px 24px; }
+
+  /* HEADER */
+  .demo-header { text-align: center; margin-bottom: 48px; }
+  .demo-logo { width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 8px 32px rgba(26, 86, 219, 0.3); }
+  .demo-logo svg { width: 48px; height: 48px; color: #fff; }
+  .demo-title { font-size: 36px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .demo-subtitle { font-size: 16px; color: var(--gray-400); max-width: 600px; margin: 0 auto; }
+  .demo-version { display: inline-block; padding: 6px 16px; background: var(--primary); color: #fff; border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 16px; }
+
+  /* THEME SELECTOR */
+  .theme-selector { display: flex; justify-content: center; gap: 12px; margin-bottom: 48px; }
+  .theme-btn { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 12px; border: 2px solid transparent; background: var(--gray-800); color: var(--gray-300); cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 500; }
+  .theme-btn:hover { background: var(--gray-700); }
+  .theme-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+  .theme-btn .dot { width: 14px; height: 14px; border-radius: 50%; }
+
+  /* SECTIONS */
+  .demo-section { margin-bottom: 48px; }
+  .demo-section-title { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--gray-700); display: flex; align-items: center; gap: 12px; }
+  .demo-section-title svg { width: 24px; height: 24px; color: var(--primary); }
+
+  /* GRID */
+  .demo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+  /* CARDS */
+  .demo-card { background: var(--gray-800); border-radius: 16px; padding: 24px; border: 1px solid var(--gray-700); transition: all 0.2s; cursor: pointer; text-decoration: none; display: block; }
+  .demo-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+  .demo-card-icon { width: 48px; height: 48px; background: var(--primary-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .demo-card-icon svg { width: 24px; height: 24px; color: var(--primary); }
+  .demo-card-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .demo-card-desc { font-size: 13px; color: var(--gray-400); line-height: 1.5; }
+  .demo-card-number { display: inline-block; padding: 4px 10px; background: var(--gray-700); border-radius: 8px; font-size: 11px; color: var(--gray-400); margin-top: 12px; }
+
+  /* SPECS */
+  .specs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
+  .spec-card { background: var(--gray-800); border-radius: 12px; padding: 20px; text-align: center; border: 1px solid var(--gray-700); }
+  .spec-label { font-size: 12px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .spec-value { font-size: 24px; font-weight: 700; color: var(--primary); }
+
+  /* FOOTER */
+  .demo-footer { text-align: center; padding-top: 40px; border-top: 1px solid var(--gray-700); color: var(--gray-500); font-size: 13px; }
+  .demo-footer a { color: var(--primary); text-decoration: none; }
+  .demo-footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 1200px) { .specs-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 768px) { .specs-grid { grid-template-columns: 1fr; } .theme-selector { flex-wrap: wrap; } }
+</style>
+</head>
+<body>
+
+<div class="demo-container">
+  <!-- HEADER -->
+  <header class="demo-header">
+    <div class="demo-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <h1 class="demo-title">DocFlow v3</h1>
+    <p class="demo-subtitle">Sistema de Gestión Documental Multi-tenant Genérico<br>Demostraciones interactivas de todas las pantallas y funcionalidades</p>
+    <span class="demo-version">Versión 3.0 — 21 Demos</span>
+  </header>
+
+  <!-- THEME SELECTOR -->
+  <div class="theme-selector">
+    <button class="theme-btn active" onclick="applyTheme('docflow', this)">
+      <span class="dot" style="background: #1a56db;"></span> DocFlow
+    </button>
+    <button class="theme-btn" onclick="applyTheme('villarrica', this)">
+      <span class="dot" style="background: #166534;"></span> Villarrica
+    </button>
+    <button class="theme-btn" onclick="applyTheme('lampa', this)">
+      <span class="dot" style="background: #7c3aed;"></span> Lampa
+    </button>
+    <button class="theme-btn" onclick="applyTheme('lascondes', this)">
+      <span class="dot" style="background: #b91c1c;"></span> Las Condes
+    </button>
+  </div>
+
+  <!-- SPECS -->
+  <div class="specs-grid">
+    <div class="spec-card">
+      <div class="spec-label">Stack</div>
+      <div class="spec-value">.NET 8 + Angular 17</div>
+    </div>
+    <div class="spec-card">
+      <div class="spec-label">Arquitectura</div>
+      <div class="spec-value">Multi-tenant</div>
+    </div>
+    <div class="spec-card">
+      <div class="spec-label">Autenticación</div>
+      <div class="spec-value">4 Métodos</div>
+    </div>
+    <div class="spec-card">
+      <div class="spec-label">Demo Screens</div>
+      <div class="spec-value">21 Pantallas</div>
+    </div>
+  </div>
+
+  <!-- AUTENTICACIÓN -->
+  <div class="demo-section">
+    <h2 class="demo-section-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Autenticación
+    </h2>
+    <div class="demo-grid">
+      <a href="06-login-cargo.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
+        <div class="demo-card-title">Login + Selección de Cargo</div>
+        <div class="demo-card-desc">Pantalla de login con métodos Local/ClaveUnica y selección de rol multi-cargo</div>
+        <span class="demo-card-number">Demo 06</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- PRINCIPAL -->
+  <div class="demo-section">
+    <h2 class="demo-section-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Principal
+    </h2>
+    <div class="demo-grid">
+      <a href="07-dashboard.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+        <div class="demo-card-title">Dashboard</div>
+        <div class="demo-card-desc">Panel principal con KPIs, documentos recientes y acciones rápidas</div>
+        <span class="demo-card-number">Demo 07</span>
+      </a>
+      <a href="11-dashboard-kpis.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></div>
+        <div class="demo-card-title">Dashboard KPIs</div>
+        <div class="demo-card-desc">Dashboard con 4 indicadores clave de gestión documental</div>
+        <span class="demo-card-number">Demo 11</span>
+      </a>
+      <a href="12-dashboard-premium.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="demo-card-title">Dashboard Premium</div>
+        <div class="demo-card-desc">Dashboard avanzado con gráficos y estadísticas</div>
+        <span class="demo-card-number">Demo 12</span>
+      </a>
+      <a href="20-bandeja-completa.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <div class="demo-card-title">Bandeja Completa</div>
+        <div class="demo-card-desc">Bandeja con sub-bandejas (email, DocDigital, Facturas, Órdenes) + panel atender</div>
+        <span class="demo-card-number">Demo 20</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- REGISTRO DOCUMENTOS -->
+  <div class="demo-section">
+    <h2 class="demo-section-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+      Registro de Documentos
+    </h2>
+    <div class="demo-grid">
+      <a href="17-registrar-documento-recibido.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+        <div class="demo-card-title">Registrar Doc. Recibido</div>
+        <div class="demo-card-desc">Formulario detallado para registrar documentos que llegan del exterior</div>
+        <span class="demo-card-number">Demo 17</span>
+      </a>
+      <a href="18-crear-documento-interno.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+        <div class="demo-card-title">Crear Doc. Interno</div>
+        <div class="demo-card-desc">Crear documentos que circulan internamente: Memo, Despacho, Circular</div>
+        <span class="demo-card-number">Demo 18</span>
+      </a>
+      <a href="19-crear-documento-externo.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+        <div class="demo-card-title">Crear Doc. Externo</div>
+        <div class="demo-card-desc">Crear documentos que se envían al exterior: Oficio, Resolución, Ordinario</div>
+        <span class="demo-card-number">Demo 19</span>
+      </a>
+      <a href="09-documento.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div class="demo-card-title">Documento (CRUD)</div>
+        <div class="demo-card-desc">Ver/editar documento con tabs de detalle</div>
+        <span class="demo-card-number">Demo 09</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- EXPEDIENTES -->
+  <div class="demo-section">
+    <h2 class="demo-section-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Expedientes
+    </h2>
+    <div class="demo-grid">
+      <a href="10-expedientes.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="demo-card-title">Expedientes</div>
+        <div class="demo-card-desc">Gestión de expedientes con tabs y checklist de progreso</div>
+        <span class="demo-card-number">Demo 10</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- CONSULTAS -->
+  <div class="demo-section">
+    <h2 class="demo-section-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Consultas
+    </h2>
+    <div class="demo-grid">
+      <a href="13-consulta-documentos.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="demo-card-title">Consulta Documentos</div>
+        <div class="demo-card-desc">Búsqueda avanzada de documentos con múltiples filtros</div>
+        <span class="demo-card-number">Demo 13</span>
+      </a>
+      <a href="14-consulta-tareas.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <div class="demo-card-title">Consulta Tareas</div>
+        <div class="demo-card-desc">Búsqueda y gestión de tareas asignadas</div>
+        <span class="demo-card-number">Demo 14</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- SISTEMA -->
+  <div class="demo-section">
+    <h2 class="demo-section-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+      Sistema
+    </h2>
+    <div class="demo-grid">
+      <a href="15-archivadores.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg></div>
+        <div class="demo-card-title">Archivadores</div>
+        <div class="demo-card-desc">Gestión física de documentos por año/mes/caja</div>
+        <span class="demo-card-number">Demo 15</span>
+      </a>
+      <a href="16-reportes.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div class="demo-card-title">Reportes</div>
+        <div class="demo-card-desc">Gráficos y estadísticas de gestión documental</div>
+        <span class="demo-card-number">Demo 16</span>
+      </a>
+      <a href="21-administracion.html" class="demo-card">
+        <div class="demo-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+        <div class="demo-card-title">Administración</div>
+        <div class="demo-card-desc">Configuración: Usuarios, Perfiles, Unidades, Tipos, Theming, Auth</div>
+        <span class="demo-card-number">Demo 21</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ESTILOS BASE -->
+  <div class="demo-section">
+    <h2 class="demo-section-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      Estilos Base (Reference)
+    </h2>
+    <div class="demo-grid">
+      <a href="01-corporate-clean.html" class="demo-card" style="opacity: 0.7;">
+        <div class="demo-card-title">01 - Layout Base</div>
+        <div class="demo-card-desc">Estructura layout básica Corporate Clean</div>
+      </a>
+      <a href="02-modern-saas.html" class="demo-card" style="opacity: 0.7;">
+        <div class="demo-card-title">02 - Tipografía</div>
+        <div class="demo-card-desc">Sistema tipográfico y jerarquía</div>
+      </a>
+      <a href="03-government-formal.html" class="demo-card" style="opacity: 0.7;">
+        <div class="demo-card-title">03 - Colores</div>
+        <div class="demo-card-desc">Paleta de colores y tokens</div>
+      </a>
+      <a href="04-material-design.html" class="demo-card" style="opacity: 0.7;">
+        <div class="demo-card-title">04 - Espaciado</div>
+        <div class="demo-card-desc">Sistema de spacing y grid</div>
+      </a>
+      <a href="05-corporate-theming.html" class="demo-card" style="opacity: 0.7;">
+        <div class="demo-card-title">05 - Theming</div>
+        <div class="demo-card-desc">Sistema de theming dinámico</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="demo-footer">
+    <p>DocFlow v3 — Sistema de Gestión Documental Multi-tenant Genérico</p>
+    <p style="margin-top: 8px;">Todos los demos incluyen <strong>theming dinámico</strong> con 4 presets: DocFlow (azul), Villarrica (verde), Lampa (violeta), Las Condes (rojo)</p>
+  </footer>
+</div>
+
+<script>
+  const presets = {
+    docflow: { primary: '#1a56db', primaryLight: '#e8effc', primaryDark: '#1240a8' },
+    villarrica: { primary: '#166534', primaryLight: '#dcfce7', primaryDark: '#14532d' },
+    lampa: { primary: '#7c3aed', primaryLight: '#ede9fe', primaryDark: '#5b21b6' },
+    lascondes: { primary: '#b91c1c', primaryLight: '#fee2e2', primaryDark: '#991b1b' }
+  };
+
+  function applyTheme(name, btn) {
+    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const p = presets[name];
+    document.documentElement.style.setProperty('--primary', p.primary);
+    document.documentElement.style.setProperty('--primary-light', p.primaryLight);
+    document.documentElement.style.setProperty('--primary-dark', p.primaryDark);
+  }
+</script>
+
+</body>
+</html>

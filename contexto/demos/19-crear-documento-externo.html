@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocFlow v3 — Crear Documento Externo (Envío)</title>
+<style>
+  :root {
+    --primary: #1a56db;
+    --primary-light: #e8effc;
+    --primary-dark: #1240a8;
+    --primary-rgb: 26, 86, 219;
+    --success: #0d9f6e;
+    --success-light: #ecfdf5;
+    --warning: #e3a008;
+    --warning-light: #fefce8;
+    --danger: #e02424;
+    --danger-light: #fef2f2;
+    --info: #3f83f8;
+    --info-light: #e0f2fe;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --sidebar-width: 260px;
+    --sidebar-collapsed: 72px;
+    --header-height: 64px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--gray-50); color: var(--gray-800);
+    font-size: 14px; line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .app-layout { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--gray-900);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    bottom: 0;
+    z-index: 100;
+    transition: width 0.25s ease;
+    overflow: hidden;
+  }
+  .sidebar.collapsed { width: var(--sidebar-collapsed); }
+  .sidebar.collapsed .sidebar-brand-text, .sidebar.collapsed .nav-label, .sidebar.collapsed .nav-badge, .sidebar.collapsed .user-info, .sidebar.collapsed .sidebar-footer-text { opacity: 0; width: 0; overflow: hidden; }
+  .sidebar.collapsed .nav-icon { margin: 0 auto; }
+
+  .sidebar-brand { height: var(--header-height); display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid rgba(255,255,255,0.08); gap: 12px; }
+  .sidebar-logo { width: 36px; height: 36px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .sidebar-brand-text { font-size: 16px; font-weight: 700; white-space: nowrap; }
+  .sidebar-user { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-user-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; }
+  .sidebar-avatar { width: 40px; height: 40px; border-radius: 10px; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
+  .sidebar-user-name { font-size: 13px; font-weight: 600; }
+  .sidebar-user-dept { font-size: 11px; color: var(--gray-400); }
+
+  .sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .sidebar-section { padding: 8px 12px; }
+  .sidebar-section-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-500); padding: 8px 8px 4px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--gray-300); text-decoration: none; border-radius: 8px; cursor: pointer; transition: all 0.15s; margin: 2px 8px; }
+  .nav-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .nav-item.active { background: var(--primary); color: #fff; }
+  .nav-icon { width: 20px; height: 20px; flex-shrink: 0; }
+  .nav-label { flex: 1; font-size: 13px; white-space: nowrap; }
+  .nav-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--danger); color: #fff; font-weight: 600; }
+  .nav-nested { display: none; }
+  .nav-nested.show { display: block; }
+  .nav-nested .nav-item { padding-left: 44px; font-size: 12px; }
+  .sidebar-footer { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .sidebar-footer-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px; background: none; border: none; color: var(--gray-400); font-size: 13px; cursor: pointer; border-radius: 8px; font-family: inherit; }
+  .sidebar-footer-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+  /* MAIN */
+  .main-wrapper { flex: 1; margin-left: var(--sidebar-width); transition: margin-left 0.25s ease; display: flex; flex-direction: column; min-height: 100vh; }
+  .sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-collapsed); }
+
+  .header { height: var(--header-height); background: #fff; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; padding: 0 24px; gap: 16px; position: sticky; top: 0; z-index: 50; }
+  .header-toggle { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 8px; color: var(--gray-600); }
+  .header-toggle:hover { background: var(--gray-100); }
+  .header-title { font-size: 18px; font-weight: 600; }
+  .header-actions { margin-left: auto; display: flex; gap: 8px; }
+  .header-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; background: none; cursor: pointer; border-radius: 8px; color: var(--gray-500); position: relative; }
+  .header-btn:hover { background: var(--gray-100); color: var(--gray-700); }
+
+  .content-area { flex: 1; padding: 24px; overflow-y: auto; }
+
+  /* BREADCRUMB */
+  .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray-500); margin-bottom: 20px; }
+  .breadcrumb a { color: var(--gray-500); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--primary); }
+  .breadcrumb-sep { color: var(--gray-300); }
+  .breadcrumb-current { color: var(--gray-800); font-weight: 500; }
+
+  /* DOC TYPE TABS */
+  .doc-type-tabs { display: flex; gap: 0; background: var(--gray-100); padding: 4px; border-radius: 10px; width: fit-content; margin-bottom: 24px; }
+  .doc-type-tab { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; background: transparent; font-size: 13px; font-weight: 500; color: var(--gray-500); cursor: pointer; border-radius: 8px; transition: all 0.15s; font-family: inherit; }
+  .doc-type-tab:hover { color: var(--gray-700); }
+  .doc-type-tab.active { background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+  /* FLOW BADGE - SALEN */
+  .flow-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+  .flow-badge.salen { background: #fef3c7; color: #d97706; }
+  .flow-badge.llegan { background: #e0f2fe; color: #0369a1; }
+
+  /* FORM CARD */
+  .form-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--gray-200); overflow: hidden; margin-bottom: 24px; }
+  .form-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--gray-100); background: var(--gray-50); }
+  .form-title { font-size: 15px; font-weight: 600; color: var(--gray-800); }
+  .form-subtitle { font-size: 12px; color: var(--gray-500); }
+  .form-body { padding: 24px; }
+
+  /* FORM GRID */
+  .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: span 3; }
+  .form-group.half { grid-column: span 2; }
+  .form-group.one-third { grid-column: span 1; }
+
+  .form-label { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+  .required { color: var(--danger); }
+  .form-hint { font-size: 11px; color: var(--gray-400); }
+  .form-input, .form-select, .form-textarea {
+    padding: 10px 14px;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--gray-800);
+    background: #fff;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1); }
+  .form-input::placeholder { color: var(--gray-400); }
+  .form-input:disabled, .form-select:disabled { background: var(--gray-50); color: var(--gray-500); cursor: not-allowed; }
+  .form-select { cursor: pointer; }
+  .form-textarea { min-height: 120px; resize: vertical; }
+
+  /* SECTION DIVIDER */
+  .section-divider { display: flex; align-items: center; gap: 16px; margin: 24px 0; }
+  .section-divider-line { flex: 1; height: 1px; background: var(--gray-200); }
+  .section-divider-text { font-size: 12px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+
+  /* AUTO NUMBER */
+  .auto-number { display: flex; align-items: center; gap: 8px; background: var(--primary-light); padding: 8px 12px; border-radius: 8px; margin-top: 8px; }
+  .auto-number-icon { width: 16px; height: 16px; color: var(--primary); }
+  .auto-number-text { font-size: 12px; color: var(--primary); font-weight: 500; }
+
+  /* DESTINATARIO EXTERNO */
+  .destinatario-card { display: flex; gap: 16px; padding: 16px; background: var(--gray-50); border-radius: 10px; border: 1px solid var(--gray-200); margin-bottom: 16px; }
+  .destinatario-info { flex: 1; }
+  .destinatario-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+  /* FILE UPLOAD */
+  .file-upload { 
+    border: 2px dashed var(--gray-300); 
+    border-radius: 10px; 
+    padding: 32px; 
+    text-align: center; 
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--gray-50);
+  }
+  .file-upload:hover { border-color: var(--primary); background: var(--primary-light); }
+  .file-upload-icon { width: 48px; height: 48px; margin: 0 auto 12px; color: var(--gray-400); }
+  .file-upload-text { font-size: 14px; color: var(--gray-600); margin-bottom: 4px; }
+  .file-upload-hint { font-size: 12px; color: var(--gray-400); }
+  .file-upload-input { display: none; }
+
+  /* FILE LIST */
+  .file-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  .file-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200); }
+  .file-icon { width: 40px; height: 40px; background: var(--primary-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+  .file-info { flex: 1; }
+  .file-name { font-size: 13px; font-weight: 500; color: var(--gray-800); }
+  .file-size { font-size: 11px; color: var(--gray-500); }
+  .file-remove { width: 28px; height: 28px; border: none; background: none; color: var(--gray-400); cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .file-remove:hover { background: var(--danger-light); color: var(--danger); }
+
+  /* SIGNATURE & SEND OPTIONS */
+  .option-card { display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 10px; margin-top: 16px; }
+  .option-card.sign { background: var(--success-light); border: 1px solid #6ee7b7; }
+  .option-card.send { background: var(--info-light); border: 1px solid #7dd3fc; }
+  .option-icon { width: 32px; height: 32px; flex-shrink: 0; }
+  .option-icon.sign { color: var(--success); }
+  .option-icon.send { color: var(--info); }
+  .option-info { flex: 1; }
+  .option-title { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+  .option-desc { font-size: 12px; color: var(--gray-600); }
+
+  /* ACTIONS */
+  .form-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 20px 24px; border-top: 1px solid var(--gray-200); background: var(--gray-50); }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: none; font-family: inherit; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary { background: #fff; border: 1px solid var(--gray-300); color: var(--gray-700); }
+  .btn-secondary:hover { background: var(--gray-50); }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--gray-800); color: white; padding: 14px 24px; border-radius: 10px; font-size: 14px; display: flex; align-items: center; gap: 10px; opacity: 0; transition: all 0.25s; z-index: 1000; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast-icon { width: 20px; height: 20px; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+
+  /* THEME SWITCHER */
+  .theme-switcher { position: fixed; bottom: 24px; right: 24px; display: flex; gap: 8px; z-index: 200; background: #fff; padding: 8px 12px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid var(--gray-200); }
+  .theme-chip { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; }
+  .theme-chip:hover { background: var(--gray-100); }
+  .theme-chip.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+  .theme-chip .dot { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* RESPONSIVE */
+  @media (max-width: 1200px) { .form-grid { grid-template-columns: repeat(2, 1fr); } .form-group.full { grid-column: span 2; } }
+  @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } .form-group.full, .form-group.half, .form-group.one-third { grid-column: span 1; } }
+</style>
+</head>
+<body>
+
+<!-- THEME SWITCHER -->
+<div class="theme-switcher">
+  <div class="theme-chip active" onclick="applyPreset('docflow', this)">
+    <span class="dot" style="background:#1a56db"></span> DocFlow
+  </div>
+  <div class="theme-chip" onclick="applyPreset('villarrica', this)">
+    <span class="dot" style="background:#166534"></span> Villarrica
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lampa', this)">
+    <span class="dot" style="background:#7c3aed"></span> Lampa
+  </div>
+  <div class="theme-chip" onclick="applyPreset('lascondes', this)">
+    <span class="dot" style="background:#b91c1c"></span> Las Condes
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span>
+  <span id="toastMsg">Operación exitosa</span>
+</div>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <span class="sidebar-brand-text" id="sidebarBrand">DocFlow</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-card">
+        <div class="sidebar-avatar">GM</div>
+        <div><div class="sidebar-user-name">Giannina Mondino</div><div class="sidebar-user-dept">Dept. Normativo</div></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Principal</div>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span class="nav-label">Dashboard</span></a>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span class="nav-label">Bandeja de Entrada</span><span class="nav-badge">12</span></a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Documentos</div>
+        <a class="nav-item has-nested" onclick="toggleNested(this)"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg><span class="nav-label">Registro</span></a>
+        <div class="nav-nested">
+          <a class="nav-item" href="#">Registrar Doc. Recibido</a>
+          <a class="nav-item" href="#">DocDigital del Gob.</a>
+          <a class="nav-item" href="#">Crear Doc. Interno</a>
+          <a class="nav-item active" href="#">Crear Doc. Externo</a>
+        </div>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span class="nav-label">Consulta Documentos</span></a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Sistema</div>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg><span class="nav-label">Archivadores</span></a>
+        <a class="nav-item" href="#"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span class="nav-label">Reportes</span></a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-footer-btn" onclick="toggleSidebar()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg><span class="sidebar-footer-text">Colapsar menú</span></button>
+      <button class="sidebar-footer-btn" onclick="alert('Cerrar sesión')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span class="sidebar-footer-text">Cerrar sesión</span></button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-wrapper">
+    <header class="header">
+      <button class="header-toggle" onclick="toggleSidebar()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <h1 class="header-title">Crear Documento Externo</h1>
+      <div class="header-actions">
+        <button class="header-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <!-- BREADCRUMB -->
+      <div class="breadcrumb">
+        <a href="#">Inicio</a>
+        <span class="breadcrumb-sep">›</span>
+        <a href="#">Registro de Documentos</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">Crear Documento Externo</span>
+      </div>
+
+      <!-- FLOW BADGE - SALEN -->
+      <div class="flow-badge salen" id="flowBadge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        ENVÍO EXTERIOR - Este documento se envía fuera de la organización
+      </div>
+
+      <!-- DOC TYPE TABS -->
+      <div class="doc-type-tabs">
+        <button class="doc-type-tab active" onclick="setDocType('oficio', this)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          Oficio
+        </button>
+        <button class="doc-type-tab" onclick="setDocType('resolucion', this)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          Resolución
+        </button>
+        <button class="doc-type-tab" onclick="setDocType('ordinario', this)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          Ordinario
+        </button>
+        <button class="doc-type-tab" onclick="setDocType('carta', this)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Carta
+        </button>
+      </div>
+
+      <!-- FORM -->
+      <div class="form-card">
+        <div class="form-header">
+          <div>
+            <span class="form-title">Datos del Documento</span>
+            <div class="form-subtitle">Documento que será enviado a entidades externas</div>
+          </div>
+        </div>
+        <div class="form-body">
+          <div class="form-grid">
+            <!-- Tipo, Número, Fecha -->
+            <div class="form-group">
+              <label class="form-label">Tipo de Documento <span class="required">*</span></label>
+              <select class="form-select" id="docType">
+                <option value="oficio" selected>Oficio</option>
+                <option value="resolucion">Resolución</option>
+                <option value="ordinario">Ordinario</option>
+                <option value="carta">Carta</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">N° Documento <span class="required">*</span></label>
+              <input type="text" class="form-input" id="numeroDoc" value="OFI-2026-0089" readonly style="background: var(--gray-50); font-weight: 600;">
+              <div class="auto-number">
+                <svg class="auto-number-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                <span class="auto-number-text">Se genera automáticamente</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha Documento <span class="required">*</span></label>
+              <input type="date" class="form-input" id="fechaDoc" value="2026-04-08">
+            </div>
+
+            <!-- Remitente interno -->
+            <div class="form-group half">
+              <label class="form-label">Remitente (desde) <span class="required">*</span></label>
+              <select class="form-select" id="remitente">
+                <option value="">Seleccionar...</option>
+                <option value="alcalde" selected>Alcaldía - Sr. Alcalde</option>
+                <option value="secretario">Secretario Municipal</option>
+                <option value="gmondino">Giannina Mondino - Dept. Normativo</option>
+                <option value="director_obras">Director de Obras</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Folio</label>
+              <input type="number" class="form-input" id="folio" placeholder="N° de páginas" min="1" value="3">
+            </div>
+          </div>
+
+          <!-- DESTINATARIO EXTERNO -->
+          <div class="section-divider">
+            <span class="section-divider-text">Destinatario Externo</span>
+            <div class="section-divider-line"></div>
+          </div>
+
+          <div class="destinatario-card">
+            <div class="destinatario-info">
+              <div class="destinatario-row">
+                <div class="form-group">
+                  <label class="form-label">Institución / Entidad <span class="required">*</span></label>
+                  <select class="form-select" id="institucion">
+                    <option value="">Seleccionar...</option>
+                    <option value="seremi" selected>SEREMI Salud Metropolitana</option>
+                    <option value="gobierno">Gobernación Provincial</option>
+                    <option value="concejalia">Concejo Municipal</option>
+                    <option value="ministerio">Ministerio del Interior</option>
+                    <option value="otro">Otra...</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Atención (Persona)</label>
+                  <input type="text" class="form-input" id="atencion" placeholder="Nombre del destinatario" value="Sra. María Elena Vargas">
+                </div>
+              </div>
+              <div class="destinatario-row" style="margin-top: 16px;">
+                <div class="form-group">
+                  <label class="form-label">Cargo</label>
+                  <input type="text" class="form-input" id="cargo" placeholder="Cargo del destinatario" value="Jefa de Partes">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Dirección</label>
+                  <input type="text" class="form-input" id="direccion" placeholder="Dirección de envío" value="Av. Libertador Bernardo O'Higgins 1440, Santiago">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CITE -->
+          <div class="form-grid" style="margin-top: 16px;">
+            <div class="form-group">
+              <label class="form-label">N° Cite (Referencia)</label>
+              <input type="text" class="form-input" id="cite" placeholder="Ej: OFI-ALCAL-2026-089" value="OFI-ALCAL-2026-089">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha Cite</label>
+              <input type="date" class="form-input" id="fechaCite" value="2026-04-08">
+            </div>
+          </div>
+
+          <!-- CONTENIDO -->
+          <div class="form-grid" style="margin-top: 16px;">
+            <!-- Categoría -->
+            <div class="form-group">
+              <label class="form-label">Categoría</label>
+              <select class="form-select" id="categoria">
+                <option value="">Seleccionar...</option>
+                <option value="daf" selected>DAF - Administración y Finanzas</option>
+                <option value="dgc">DGC - Gestión Comunitaria</option>
+                <option value="do">DO - Dirección de Obras</option>
+                <option value="sec">SEC - Secretaría Municipal</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prioridad</label>
+              <select class="form-select" id="prioridad">
+                <option value="normal" selected>Normal</option>
+                <option value="urgente">Urgente</option>
+                <option value="muy_urgente">Muy Urgente</option>
+              </select>
+            </div>
+
+            <!-- Asunto -->
+            <div class="form-group full">
+              <label class="form-label">Materia / Asunto <span class="required">*</span></label>
+              <input type="text" class="form-input" id="materia" placeholder="Resumen del contenido del documento" value="Solicitud de pronunciamiento sobre proyecto de ampliación">
+            </div>
+
+            <!-- Cuerpo -->
+            <div class="form-group full">
+              <label class="form-label">Cuerpo del Documento</label>
+              <textarea class="form-textarea" id="cuerpo" rows="6" placeholder="Escriba el contenido del documento...">Villarrica, 8 de Abril de 2026.
+
+Señora
+MARÍA ELENA VARGAS
+Jefa de Partes
+SEREMI Salud Metropolitana
+Presente
+
+De mi consideración:
+
+Por medio del presente, me dirijo a usted con el objeto de solicitar el pronunciamiento respecto del proyecto de ampliación del Centro de Salud Familiar de nuestra comuna, expediente N° 2026-0458.
+
+Se adjunta expediente completo con la documentación técnica correspondiente.
+
+Sin otro particular, saludo atentamente a usted.</textarea>
+            </div>
+          </div>
+
+          <!-- SECTION: ENVÍO -->
+          <div class="section-divider">
+            <span class="section-divider-text">Opciones de Envío</span>
+            <div class="section-divider-line"></div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Medio de Envío</label>
+              <select class="form-select" id="medioEnvio">
+                <option value="fisico" selected>Entrega física (Oficina de partes)</option>
+                <option value="email">Correo electrónico certificado</option>
+                <option value="chileatiende">Plataforma ChileAtiende</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">N° Guía / Folio</label>
+              <input type="text" class="form-input" id="guia" placeholder="Número de guía de envío">
+            </div>
+          </div>
+
+          <!-- SECTION: ADJUNTOS -->
+          <div class="section-divider">
+            <span class="section-divider-text">Adjuntos</span>
+            <div class="section-divider-line"></div>
+          </div>
+
+          <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+            <input type="file" class="file-upload-input" id="fileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx">
+            <svg class="file-upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="file-upload-text">Arrastre archivos aquí o haga clic para seleccionar</div>
+            <div class="file-upload-hint">Documentos, planillas, antecedentes (máx. 50MB)</div>
+          </div>
+
+          <div class="file-list" id="fileList">
+            <div class="file-item">
+              <div class="file-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <div class="file-info">
+                <div class="file-name">Expediente_Tecnico_Completo.pdf</div>
+                <div class="file-size">4.5 MB • Expediente completo</div>
+              </div>
+              <button class="file-remove" onclick="removeFile(this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div class="file-item">
+              <div class="file-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <div class="file-info">
+                <div class="file-name">Planos_Ampliacion.pdf</div>
+                <div class="file-size">8.2 MB • Planos arquitectónicos</div>
+              </div>
+              <button class="file-remove" onclick="removeFile(this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- SIGNATURE & SEND -->
+          <div class="option-card sign">
+            <svg class="option-icon sign" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+            <div class="option-info">
+              <div class="option-title">Firma Digital Obligatoria</div>
+              <div class="option-desc">El documento debe ser firmado antes del envío</div>
+            </div>
+          </div>
+
+          <div class="option-card send">
+            <svg class="option-icon send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <div class="option-info">
+              <div class="option-title">Generar Comprobante de Envío</div>
+              <div class="option-desc">Al crear se generará un registro de envío con código de seguimiento</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="form-actions">
+          <button class="btn btn-secondary" onclick="previewDoc()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Vista Previa
+          </button>
+          <button class="btn btn-primary" onclick="submitForm()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Crear y Enviar
+          </button>
+        </div>
+      </div>
+
+      <!-- HELP TEXT -->
+      <div style="text-align: center; color: var(--gray-500); font-size: 12px; margin-top: 16px;">
+        Los campos marcados con <span style="color: var(--danger);">*</span> son obligatorios
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Sidebar toggle
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  }
+
+  // Toggle nested nav
+  function toggleNested(el) {
+    const nested = el.nextElementSibling;
+    if (nested && nested.classList.contains('nav-nested')) {
+      nested.classList.toggle('show');
+    }
+  }
+
+  // Doc type tabs
+  function setDocType(type, btn) {
+    document.querySelectorAll('.doc-type-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('docType').value = type;
+    
+    const numbers = {
+      oficio: 'OFI-2026-0089',
+      resolucion: 'RES-2026-0156',
+      ordinario: 'ORD-2026-0234',
+      carta: 'CRT-2026-0045'
+    };
+    document.getElementById('numeroDoc').value = numbers[type];
+    
+    showToast('Tipo cambiado a: ' + btn.textContent.trim(), 'info');
+  }
+
+  // File functions
+  function removeFile(btn) {
+    btn.closest('.file-item').remove();
+    showToast('Archivo eliminado', 'warning');
+  }
+
+  function previewDoc() {
+    showToast('Generando vista previa...', 'info');
+  }
+
+  function submitForm() {
+    const tipo = document.getElementById('docType').value;
+    const materia = document.getElementById('materia').value;
+    const institucion = document.getElementById('institucion').value;
+    
+    if (!tipo || !materia || !institucion) {
+      showToast('Por favor complete los campos obligatorios', 'error');
+      return;
+    }
+    
+    showToast('Documento creado: OFI-2026-0089', 'success');
+    
+    setTimeout(() => {
+      showToast('Firmando digitalmente...', 'info');
+    }, 1500);
+    
+    setTimeout(() => {
+      showToast('Enviando a SEREMI Salud Metropolitana...', 'success');
+    }, 3000);
+  }
+
+  // Toast
+  function showToast(msg, type = 'success') {
+    const toast = document.getElementById('toast');
+    const icon = toast.querySelector('.toast-icon');
+    const text = document.getElementById('toastMsg');
+    
+    toast.className = 'toast ' + type;
+    text.textContent = msg;
+    
+    if (type === 'success') icon.innerHTML = '✓';
+    else if (type === 'error') icon.innerHTML = '✕';
+    else icon.innerHTML = 'ℹ';
+    
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Theme switcher
+  const presets = {
+    docflow: { primary: '#1a56db', primaryLight: '#e8effc', primaryDark: '#1240a8' },
+    villarrica: { primary: '#166534', primaryLight: '#dcfce7', primaryDark: '#14532d' },
+    lampa: { primary: '#7c3aed', primaryLight: '#ede9fe', primaryDark: '#5b21b6' },
+    lascondes: { primary: '#b91c1c', primaryLight: '#fee2e2', primaryDark: '#991b1b' }
+  };
+
+  function applyPreset(name, chip) {
+    document.querySelectorAll('.theme-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    
+    const preset = presets[name];
+    document.documentElement.style.setProperty('--primary', preset.primary);
+    document.documentElement.style.setProperty('--primary-light', preset.primaryLight);
+    document.documentElement.style.setProperty('--primary-dark', preset.primaryDark);
+    
+    document.getElementById('sidebarBrand').textContent = name === 'docflow' ? 'DocFlow' : 'SGD ' + name.charAt(0).toUpperCase() + name.slice(1);
+  }
+
+  // File upload handler
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const fileList = document.getElementById('fileList');
+    
+    for (let file of files) {
+      const size = (file.size / (1024*1024)).toFixed(1) + ' MB';
+      const html = `
+        <div class="file-item">
+          <div class="file-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="file-info">
+            <div class="file-name">${file.name}</div>
+            <div class="file-size">${size} • Subido ahora</div>
+          </div>
+          <button class="file-remove" onclick="removeFile(this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      `;
+      fileList.insertAdjacentHTML('beforeend', html);
+    }
+    showToast(files.length + ' archivo(s) agregado(s)', 'success');
+  });
+</script>
+
+</body>
+</html>
