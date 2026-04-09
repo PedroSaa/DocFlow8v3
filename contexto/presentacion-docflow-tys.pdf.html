@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>DocFlow 8 Infinity - Presentación Comercial - Tecnología y Servicios SA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a56db;
+            --primary-dark: #1e40af;
+            --primary-light: #3b82f6;
+            --secondary: #64748b;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-500: #64748b;
+            --gray-700: #334155;
+            --gray-900: #0f172a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: white;
+            color: var(--dark);
+            width: 297mm;
+            height: 210mm;
+            overflow: hidden;
+        }
+
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #1a56db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(26, 86, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .print-btn:hover {
+            background: #1e40af;
+            transform: translateY(-2px);
+        }
+
+        @media print {
+            .print-btn { display: none; }
+        }
+
+        .page {
+            width: 297mm;
+            height: 210mm;
+            page-break-after: always;
+            padding: 15mm;
+            display: none;
+        }
+
+        .page:first-child {
+            display: block;
+        }
+
+        /* Title Page */
+        .page-title {
+            background: linear-gradient(135deg, var(--gray-900) 0%, var(--dark) 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(26, 86, 219, 0.4);
+        }
+
+        .logo svg {
+            width: 60px;
+            height: 60px;
+            fill: white;
+        }
+
+        .page-title h1 {
+            font-size: 52px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, white 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-title .subtitle {
+            font-size: 24px;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .page-title .client {
+            margin-top: 50px;
+            padding: 15px 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .page-title .client-name {
+            font-size: 16px;
+            color: #94a3b8;
+        }
+
+        .page-title .client-company {
+            font-size: 22px;
+            font-weight: 600;
+            color: white;
+            margin-top: 5px;
+        }
+
+        .page-number {
+            position: absolute;
+            bottom: 10mm;
+            right: 15mm;
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* Content Pages */
+        .page-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-content h2 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: var(--dark);
+        }
+
+        .page-content h2 span {
+            color: var(--primary);
+        }
+
+        .page-content .page-number {
+            color: var(--gray-400);
+        }
+
+        /* Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--gray-100);
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .card-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .card p {
+            font-size: 13px;
+            color: var(--gray-500);
+            line-height: 1.5;
+        }
+
+        /* Flow Diagram */
+        .flow-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            background: var(--gray-100);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+            min-width: 130px;
+        }
+
+        .flow-step .step-num {
+            width: 35px;
+            height: 35px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 10px;
+        }
+
+        .flow-step h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .flow-step p {
+            font-size: 11px;
+            color: var(--gray-500);
+        }
+
+        .flow-arrow {
+            color: var(--primary-light);
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Flow Note */
+        .flow-note {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flow-note-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--gray-200);
+            font-size: 12px;
+        }
+
+        .flow-note-icon {
+            font-size: 18px;
+        }
+
+        .flow-note-item strong {
+            color: var(--primary);
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(26, 86, 219, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .highlight-box h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .highlight-box p {
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+
+        /* Three Flows Card */
+        .three-flows {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .flow-cardflow {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .flow-cardflow-header {
+            padding: 18px;
+            text-align: center;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .flow-cardflow-header .flow-icon {
+            font-size: 24px;
+        }
+
+        .flow-cardflow-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+
+        .flow-cardflow-body {
+            padding: 18px;
+            text-align: center;
+        }
+
+        .flow-direction {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .flow-types {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .type-badge {
+            background: #f3f4f6;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+
+        .flow-desc {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        /* Módulos Grid */
+        .modulos-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .modulo-item {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .modulo-item:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(26, 86, 219, 0.15);
+        }
+
+        .modulo-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .modulo-item h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .modulo-item p {
+            font-size: 10px;
+            color: var(--gray-500);
+        }
+
+        /* Timeline */
+        .timeline-section {
+            margin-top: 20px;
+        }
+
+        .timeline-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: var(--gray-100);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .timeline-phase {
+            width: 180px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .timeline-duration {
+            width: 70px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--success);
+            background: #d1fae5;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-align: center;
+            flex-shrink: 0;
+            margin-right: 12px;
+        }
+
+        .timeline-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .timeline-item {
+            font-size: 10px;
+            color: var(--gray-600);
+            background: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .total-time {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 12px;
+            color: white;
+        }
+
+        .total-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .total-value {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        /* Signature Section */
+        .signature-showcase {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .signature-demo {
+            flex: 1;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .signature-demo h4 {
+            color: var(--dark);
+            font-size: 13px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .signature-preview {
+            background: var(--gray-100);
+            border-radius: 10px;
+            padding: 18px;
+            border: 1px dashed var(--gray-300);
+        }
+
+        .signature-line {
+            height: 1px;
+            background: var(--gray-300);
+            margin: 12px 0;
+        }
+
+        .signature-text {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 22px;
+            color: var(--primary);
+            text-align: right;
+        }
+
+        .signature-name {
+            font-size: 12px;
+            color: var(--gray-700);
+            text-align: right;
+            margin-top: 8px;
+        }
+
+        .signature-date {
+            font-size: 10px;
+            color: var(--gray-500);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .sig-verified {
+            margin-top: 10px;
+            padding: 6px;
+            background: #d1fae5;
+            border-radius: 6px;
+            font-size: 10px;
+            color: #065f46;
+            text-align: center;
+        }
+
+        .signature-features {
+            flex: 1;
+        }
+
+        .sig-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .sig-feature-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--success);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .sig-feature-icon svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
+        }
+
+        .sig-feature h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+
+        .sig-feature p {
+            font-size: 10px;
+            color: var(--gray-500);
+        }
+
+        /* Benefits */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--gray-100);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .benefit-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--success) 0%, #10b981 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .benefit-icon svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .benefit-text h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+
+        .benefit-text p {
+            font-size: 11px;
+            color: var(--gray-500);
+        }
+
+        /* Problem Cards */
+        .problem-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .problem-card {
+            background: var(--gray-100);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .problem-card .card-icon {
+            margin: 0 auto 15px;
+        }
+
+        .problem-card h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .problem-card p {
+            font-size: 12px;
+        }
+
+        /* Contact Page */
+        .page-contact {
+            background: linear-gradient(135deg, var(--gray-900) 0%, var(--dark) 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .page-contact h2 {
+            color: white;
+            font-size: 44px;
+        }
+
+        .page-contact p {
+            font-size: 18px;
+            color: #cbd5e1;
+            margin-top: 15px;
+        }
+
+        .contact-info {
+            margin-top: 30px;
+        }
+
+        .contact-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 20px;
+            font-size: 16px;
+            color: #cbd5e1;
+        }
+
+        .contact-item svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--primary-light);
+        }
+
+        .cta-box {
+            margin-top: 35px;
+            padding: 15px 40px;
+            background: var(--primary);
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                width: auto;
+                height: auto;
+            }
+            .page {
+                display: block !important;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+
+    <!-- Page 1: Title -->
+    <div class="page page-title">
+        <div class="logo">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 15h8v2H8v-2zm0-4h8v2H8v-2z"/></svg>
+        </div>
+        <h1>DocFlow 8 Infinity</h1>
+        <p class="subtitle">Gestión Documental Inteligente</p>
+        <div class="client">
+            <p class="client-name">Presentación Comercial</p>
+            <p class="client-company">Tecnología y Servicios SA</p>
+        </div>
+        <span class="page-number">1 / 8</span>
+    </div>
+
+    <!-- Page 2: ¿Qué es DocFlow 8 Infinity? -->
+    <div class="page page-content">
+        <h2>¿Qué es <span>DocFlow 8 Infinity</span>?</h2>
+        <p style="font-size: 16px; color: var(--gray-600); margin-bottom: 20px;">Evolución del sistema DocFlow 6 legacy, basado en años de experiencia en gestión documental municipal.</p>
+        
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                </div>
+                <h3>Gestión Centralizada</h3>
+                <p>Administra todos los documentos de tu organización en una sola plataforma.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <h3>Flujos Inteligentes</h3>
+                <p>Automatiza la aprobación y derivación de documentos según reglas heredadas del sistema actual.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <h3>Firma Electrónica</h3>
+                <p>Firma documentos electrónicamente con certificado digital, igual que el sistema actual.</p>
+            </div>
+        </div>
+        <span class="page-number">2 / 8</span>
+    </div>
+
+    <!-- Page 3: El Problema -->
+    <div class="page page-content">
+        <h2>El Desafío <span>Actual</span></h2>
+        <p style="font-size: 16px; color: var(--gray-600); margin-bottom: 20px;">Lo que resolvemos de la operación actual:</p>
+        
+        <div class="problem-cards">
+            <div class="problem-card">
+                <div class="card-icon" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                </div>
+                <h3>Documentos Perdidos</h3>
+                <p>El papel se extravía y los archivos digitales se desorganizan.</p>
+            </div>
+            <div class="problem-card">
+                <div class="card-icon" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">
+                    <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                </div>
+                <h3>Retrasos en Trámite</h3>
+                <p>Los documentos esperan días en escritorios esperando firmas.</p>
+            </div>
+            <div class="problem-card">
+                <div class="card-icon" style="background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                </div>
+                <h3>Falta de Trazabilidad</h3>
+                <p>No se sabe quién tiene el documento ni en qué estado está.</p>
+            </div>
+        </div>
+        <div class="highlight-box">
+            <h3>DocFlow 8 Infinity resuelve todo esto</h3>
+            <p>Digitaliza completamente el flujo de documentos heredado del sistema actual</p>
+        </div>
+        <span class="page-number">3 / 8</span>
+    </div>
+
+    <!-- Page 4: Flujo de Documento de Salida (Legacy) -->
+    <div class="page page-content">
+        <h2>Flujo de <span>Documento de Salida</span></h2>
+        <p style="font-size: 16px; color: var(--gray-600); margin-bottom: 15px;">Basado en el funcionamiento real del sistema DocFlow actual:</p>
+        
+        <div class="flow-container">
+            <div class="flow-step">
+                <div class="step-num">1</div>
+                <h4>Crear</h4>
+                <p>Ingresar documento con todos los datos</p>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num">2</div>
+                <h4>Derivar</h4>
+                <p>Enviar a trámite interno</p>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num">3</div>
+                <h4>Recibir</h4>
+                <p>Área recibe y revisa</p>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num">4</div>
+                <h4>Firmar</h4>
+                <p>Firma electrónica → PDF certificado</p>
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">
+                <div class="step-num">5</div>
+                <h4>Oficina Partes</h4>
+                <p>Despacho al exterior</p>
+            </div>
+        </div>
+
+        <div class="flow-note">
+            <div class="flow-note-item">
+                <span class="flow-note-icon">📋</span>
+                <span><strong>Bandeja:</strong> Docs pendientes de acción</span>
+            </div>
+            <div class="flow-note-item">
+                <span class="flow-note-icon">📁</span>
+                <span><strong>Expedientes:</strong> Docs agrupados por proyecto</span>
+            </div>
+            <div class="flow-note-item">
+                <span class="flow-note-icon">🗂️</span>
+                <span><strong>Archivadores:</strong> Por año/mes/caja</span>
+            </div>
+        </div>
+
+        <div class="highlight-box">
+            <h3>Acciones por Documento</h3>
+            <p>Recibir, Derivar, Reenviar, Devolver, Archivar, Anular, Destacar</p>
+        </div>
+        <span class="page-number">4 / 8</span>
+    </div>
+
+    <!-- Page 4B: Los 3 Flujos de Documentos -->
+    <div class="page page-content">
+        <h2>Los 3 <span>Flujos de Documentos</span></h2>
+        <p style="font-size: 16px; color: var(--gray-600); margin-bottom: 20px;">Basado en el sistema DocFlow legacy:</p>
+        
+        <div class="three-flows">
+            <div class="flow-cardflow">
+                <div class="flow-cardflow-header" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                    <span class="flow-icon">📥</span>
+                    <h3>LLEGAN</h3>
+                </div>
+                <div class="flow-cardflow-body">
+                    <p class="flow-direction">Exterior → Interior</p>
+                    <div class="flow-types">
+                        <span class="type-badge">Recibido</span>
+                        <span class="type-badge">Partes</span>
+                        <span class="type-badge">Externos</span>
+                        <span class="type-badge">Email</span>
+                    </div>
+                    <p class="flow-desc">Documentos que vienen de fuera de la organización</p>
+                </div>
+            </div>
+            
+            <div class="flow-cardflow">
+                <div class="flow-cardflow-header" style="background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);">
+                    <span class="flow-icon">🔄</span>
+                    <h3>CIRCULAN</h3>
+                </div>
+                <div class="flow-cardflow-body">
+                    <p class="flow-direction">Interno → Interno</p>
+                    <div class="flow-types">
+                        <span class="type-badge">Memo</span>
+                        <span class="type-badge">Despacho</span>
+                        <span class="type-badge">Circular</span>
+                        <span class="type-badge">Informe</span>
+                    </div>
+                    <p class="flow-desc">Documentos que circulan solo internamente (nunca salen)</p>
+                </div>
+            </div>
+            
+            <div class="flow-cardflow">
+                <div class="flow-cardflow-header" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);">
+                    <span class="flow-icon">📤</span>
+                    <h3>SALEN</h3>
+                </div>
+                <div class="flow-cardflow-body">
+                    <p class="flow-direction">Interior → Exterior</p>
+                    <div class="flow-types">
+                        <span class="type-badge">Oficio</span>
+                        <span class="type-badge">Resolución</span>
+                        <span class="type-badge">Ordinario</span>
+                        <span class="type-badge">Carta</span>
+                    </div>
+                    <p class="flow-desc">Documentos que se envían al exterior</p>
+                </div>
+            </div>
+        </div>
+        <span class="page-number">5 / 8</span>
+    </div>
+
+    <!-- Page 5: Módulos del Sistema -->
+    <div class="page page-content">
+        <h2>Módulos <span>del Sistema</span></h2>
+        <p style="font-size: 16px; color: var(--gray-600); margin-bottom: 15px;">Basado en los módulos funcionales de DocFlow legacy:</p>
+        
+        <div class="modulos-grid">
+            <div class="modulo-item">
+                <div class="modulo-icon">📥</div>
+                <h4>Bandeja de Entrada</h4>
+                <p>Docs pendientes por recibir/derivar</p>
+            </div>
+            <div class="modulo-item">
+                <div class="modulo-icon">📤</div>
+                <h4>Registro Docs</h4>
+                <p>Recepción y creación de documentos</p>
+            </div>
+            <div class="modulo-item">
+                <div class="modulo-icon">📁</div>
+                <h4>Expedientes</h4>
+                <p>Agrupación de docs por hitos</p>
+            </div>
+            <div class="modulo-item">
+                <div class="modulo-icon">📄</div>
+                <h4>Gestión Documentos</h4>
+                <p>Crear, editar, ver, buscar docs</p>
+            </div>
+            <div class="modulo-item">
+                <div class="modulo-icon">🔍</div>
+                <h4>Consultas</h4>
+                <p>Búsqueda avanzada por filtros</p>
+            </div>
+            <div class="modulo-item">
+                <div class="modulo-icon">📊</div>
+                <h4>Reportes</h4>
+                <p>Estadísticas y gráficos</p>
+            </div>
+            <div class="modulo-item">
+                <div class="modulo-icon">🗂️</div>
+                <h4>Archivadores</h4>
+                <p>Org. física año/mes/caja</p>
+            </div>
+            <div class="modulo-item">
+                <div class="modulo-icon">⚙️</div>
+                <h4>Administración</h4>
+                <p>Configuración del sistema</p>
+            </div>
+        </div>
+        <span class="page-number">5 / 8</span>
+    </div>
+
+    <!-- Page 6: Firma Electrónica -->
+    <div class="page page-content">
+        <h2>Firma <span>Electrónica</span></h2>
+        <p style="font-size: 16px; color: var(--gray-600); margin-bottom: 15px;">Funciona exactamente como el sistema actual DocFlow 6:</p>
+        
+        <div class="signature-showcase">
+            <div class="signature-demo">
+                <h4>Documento Firmado PDF</h4>
+                <div class="signature-preview">
+                    <div style="color: var(--dark); font-size: 13px; font-weight: 600;">OFICIO N° 245/2026</div>
+                    <div style="color: var(--gray-600); font-size: 12px; margin-top: 4px;">Santiago, 15 de Abril de 2026</div>
+                    <div class="signature-line"></div>
+                    <div style="color: var(--dark); font-size: 12px;">De: Dirección de Administración</div>
+                    <div style="color: var(--dark); font-size: 12px;">A: Sr. Jefe de finanzas</div>
+                    <div style="color: var(--dark); font-size: 12px; margin-top: 8px;">Asunto: Solicitud de presupuesto</div>
+                    <div class="signature-line"></div>
+                    <div class="signature-text">Juan Pérez</div>
+                    <div class="signature-name">Juan Pérez<br><span style="font-size: 10px; font-weight: 400;">Director de Administración</span></div>
+                    <div class="signature-date">Firmado electrónicamente: 15/04/2026 14:32 hrs</div>
+                    <div class="sig-verified">✓ Certificado digital</div>
+                </div>
+            </div>
+            
+            <div class="signature-features">
+                <div class="sig-feature">
+                    <div class="sig-feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </div>
+                    <div>
+                        <h4>Firma en Editor</h4>
+                        <p>Se firma en editor de texto, luego se convierte en PDF certificado</p>
+                    </div>
+                </div>
+                <div class="sig-feature">
+                    <div class="sig-feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                    </div>
+                    <div>
+                        <h4>Validez Legal</h4>
+                        <p>Certificado digital con fuerza jurídica</p>
+                    </div>
+                </div>
+                <div class="sig-feature">
+                    <div class="sig-feature-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z"/></svg>
+                    </div>
+                    <div>
+                        <h4>Trazabilidad</h4>
+                        <p>Registro de cada firma: quién, cuándo, hash del documento</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <span class="page-number">6 / 8</span>
+    </div>
+
+    <!-- Page 7: Plazos de Implementación -->
+    <div class="page page-content">
+        <h2>Plazos de <span>Implementación</span></h2>
+        
+        <div class="timeline-section">
+            <div class="timeline-row">
+                <div class="timeline-phase">Fase 1: Preparación</div>
+                <div class="timeline-duration">Mes 1</div>
+                <div class="timeline-items">
+                    <span class="timeline-item">Análisis requisitos</span>
+                    <span class="timeline-item">Arquitectura técnica</span>
+                    <span class="timeline-item">Setup entorno</span>
+                    <span class="timeline-item">Diseño DB</span>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-phase">Fase 2: Backend Core</div>
+                <div class="timeline-duration">Meses 2-3</div>
+                <div class="timeline-items">
+                    <span class="timeline-item">Multi-tenancy</span>
+                    <span class="timeline-item">Auth (Local/ClaveUnica)</span>
+                    <span class="timeline-item">API RESTful</span>
+                    <span class="timeline-item">Búsqueda FTS5</span>
+                    <span class="timeline-item">OCR</span>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-phase">Fase 3: Frontend</div>
+                <div class="timeline-duration">Meses 3-5</div>
+                <div class="timeline-items">
+                    <span class="timeline-item">Dashboard KPIs</span>
+                    <span class="timeline-item">Bandeja Entrada</span>
+                    <span class="timeline-item">Expedientes</span>
+                    <span class="timeline-item">Gestión Docs</span>
+                    <span class="timeline-item">Registro Docs</span>
+                    <span class="timeline-item">Consultas</span>
+                    <span class="timeline-item">Reportes</span>
+                    <span class="timeline-item">Archivadores</span>
+                    <span class="timeline-item">Admin</span>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-phase">Fase 4: Testing</div>
+                <div class="timeline-duration">Meses 5-6</div>
+                <div class="timeline-items">
+                    <span class="timeline-item">Testing integral</span>
+                    <span class="timeline-item">Corrección bugs</span>
+                    <span class="timeline-item">Documentación</span>
+                    <span class="timeline-item">Capacitación</span>
+                    <span class="timeline-item">Go-live</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="total-time">
+            <span class="total-label">Tiempo total de implementación:</span>
+            <span class="total-value">6-8 meses</span>
+        </div>
+        <span class="page-number">7 / 8</span>
+    </div>
+
+    <!-- Page 8: Beneficios y Contacto -->
+    <div class="page page-content">
+        <h2>Beneficios <span>Clave</span></h2>
+        
+        <div class="benefits-grid">
+            <div class="benefit-item">
+                <div class="benefit-icon">
+                    <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                </div>
+                <div class="benefit-text">
+                    <h4>Ahorro de Tiempo</h4>
+                    <p>Reduce el tiempo de trámite de días a minutos</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <div class="benefit-text">
+                    <h4>Cero Papel</h4>
+                    <p>Elimina completamente el uso de papel en trámites</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+                </div>
+                <div class="benefit-text">
+                    <h4>Seguridad Total</h4>
+                    <p>Cifrado de extremo a extremo y auditoría completa</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                </div>
+                <div class="benefit-text">
+                    <h4>Multi-tenant</h4>
+                    <p>Varias organizaciones en una sola instalación</p>
+                </div>
+            </div>
+        </div>
+        <span class="page-number">8 / 8</span>
+    </div>
+
+    <!-- Page 9: Contacto -->
+    <div class="page page-contact">
+        <h2>¿Hablamos?</h2>
+        <p>Estamos listos para transformar la gestión documental de Tecnología y Servicios SA</p>
+        
+        <div class="contact-info">
+            <div class="contact-item">
+                <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                <span>contacto@gentlestack.cl</span>
+            </div>
+            <div class="contact-item">
+                <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                <span>+56 2 2xxx xxxx</span>
+            </div>
+        </div>
+
+        <div class="cta-box">Solicitar Demo</div>
+        <span class="page-number">9 / 9</span>
+    </div>
+</body>
+</html>

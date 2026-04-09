@@ -114,6 +114,12 @@
   .registry-tab.active { background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
   .registry-tab-icon { width: 18px; height: 18px; }
 
+  /* FLOW BADGE */
+  .flow-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+  .flow-badge.llegan { background: #e0f2fe; color: #0369a1; }
+  .flow-badge.circulan { background: #dcfce7; color: #047857; }
+  .flow-badge.salen { background: #fef3c7; color: #d97706; }
+
   /* FORM CARD */
   .form-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--gray-200); overflow: hidden; margin-bottom: 24px; }
   .form-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--gray-100); background: var(--gray-50); }
@@ -312,6 +318,12 @@
         <a href="#">Registro de Documentos</a>
         <span class="breadcrumb-sep">›</span>
         <span class="breadcrumb-current">Registrar Documento Recibido</span>
+      </div>
+
+      <!-- FLOW BADGE - LLEGAN -->
+      <div class="flow-badge llegan" id="flowBadge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        LLEGAN - Documento que llega del exterior a la organización
       </div>
 
       <!-- DOCDIGITAL BANNER (Conditional) -->
