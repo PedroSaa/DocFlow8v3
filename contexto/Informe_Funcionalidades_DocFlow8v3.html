@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe de Funcionalidades DocFlow 8 Infinity</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
+        h1 { color: #1a56db; border-bottom: 3px solid #1a56db; padding-bottom: 10px; }
+        h2 { color: #1e40af; border-left: 4px solid #1a56db; padding-left: 15px; margin-top: 30px; }
+        h3 { color: #1d4ed8; margin-top: 25px; }
+        h4 { color: #2563eb; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #1a56db; color: white; }
+        tr:nth-child(even) { background-color: #f9fafb; }
+        ul, ol { margin: 15px 0; padding-left: 25px; }
+        li { margin: 8px 0; }
+        hr { border: none; border-top: 2px solid #e5e7eb; margin: 30px 0; }
+        code { background-color: #f3f4f6; padding: 2px 6px; border-radius: 4px; }
+        .info-box { background-color: #dbeafe; border: 1px solid #93c5fd; border-radius: 8px; padding: 15px; margin: 20px 0; }
+        .aviso { background-color: #fee2e2; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+<h1>INFORME DE FUNCIONALIDADES DEL SISTEMA DOCFLOW 8 INFINITY</h1>
+
+<p><strong>Versión:</strong> 1.0 | <strong>Fecha:</strong> 9 de Abril 2026 | <strong>Proyecto:</strong> DocFlow 8 Infinity</p>
+
+<hr>
+
+<h2>1. FLUJOS DE DOCUMENTOS</h2>
+
+<h3>1.1 Flujo LLEGAN (Exterior → Interior)</h3>
+<p>Documentos que vienen de fuera de la organización hacia el interior.</p>
+<p><strong>Tipos:</strong> Recibido, Partes, Externos, Email Recibido, Email con Adjunto, DocDigital del Gobierno</p>
+<p><strong>Funcionalidades:</strong> Registro manual, importación desde DocDigital, captura de email, clasificación automática, distribución automática.</p>
+<p><strong>Demo:</strong> <code>17-registrar-documento-recibido.html</code></p>
+
+<h3>1.2 Flujo CIRCULAN (Interno → Interno)</h3>
+<p>Documentos que circulan solo dentro de la organización y nunca salen al exterior.</p>
+<p><strong>Tipos:</strong> Memo, Despacho, Circular, Informe</p>
+<p><strong>Funcionalidades:</strong> Crear documentos internos, derivación entre deptos, V°B°, firma interna.</p>
+<p><strong>Demo:</strong> <code>18-crear-documento-interno.html</code></p>
+
+<h3>1.3 Flujo SALEN (Interior → Exterior)</h3>
+<p>Documentos que se envían desde la organización hacia el exterior.</p>
+<p><strong>Tipos:</strong> Oficio, Resolución, Ordinario, Carta</p>
+<p><strong>Flujo de 6 pasos:</strong></p>
+<ol>
+    <li><strong>Crear</strong> - Redactar documento</li>
+    <li><strong>Derivar</strong> - Enviar a revisión</li>
+    <li><strong>Recibir</strong> - Área destinataria</li>
+    <li><strong>Firmar</strong> - Firma electrónica</li>
+    <li><strong>Oficina Partes</strong> - Despacho autorizado</li>
+    <li><strong>Despacho</strong> - Envío físico/electrónico</li>
+</ol>
+<p><strong>Demo:</strong> <code>19-crear-documento-externo.html</code></p>
+
+<hr>
+
+<h2>2. BANDEJA DE ENTRADA</h2>
+
+<h3>2.1 Filtros</h3>
+<ul>
+    <li>Fecha (desde/hasta)</li>
+    <li>Tipo de documento</li>
+    <li>Número de documento</li>
+    <li>Materia</li>
+    <li>Correlativo</li>
+</ul>
+
+<h3>2.2 Acciones</h3>
+<table>
+    <tr><th>Acción</th><th>Descripción</th></tr>
+    <tr><td>Recibir</td><td>Aceptar documento derivado</td></tr>
+    <tr><td>Derivar</td><td>Enviar a otro usuario/unidad</td></tr>
+    <tr><td>Reenviar</td><td>Reenviar manteniendo historial</td></tr>
+    <tr><td>Devolver</td><td>Devolver al remitente</td></tr>
+    <tr><td>Archivar</td><td>Mover a archivador físico</td></tr>
+    <tr><td>Anular</td><td>Cancelar documento (admin)</td></tr>
+    <tr><td>Destacar</td><td>Marcar importante/urgente</td></tr>
+    <tr><td>Firmar</td><td>Aplicar firma digital</td></tr>
+</table>
+
+<h3>2.3 Indicadores</h3>
+<ul>
+    <li><strong>T</strong> - Timbre/firma</li>
+    <li><strong>I</strong> - Imagen escaneada</li>
+    <li><strong>A</strong> - Adjuntos</li>
+    <li><strong>R</strong> - Referencias</li>
+    <li><strong>O</strong> - Observaciones</li>
+</ul>
+
+<h3>2.4 Sub-Bandejas</h3>
+<ul>
+    <li>Bandeja Principal</li>
+    <li>DocDigital del Gob.</li>
+    <li>Email</li>
+    <li>Facturas (DTE)</li>
+    <li>Órdenes de Compra</li>
+</ul>
+
+<hr>
+
+<h2>3. REGISTRO Y CREACIÓN DE DOCUMENTOS</h2>
+
+<h3>3.1 Campos del Formulario</h3>
+<table>
+    <tr><th>Campo</th><th>Tipo</th><th>Requerido</th></tr>
+    <tr><td>Tipo Documento</td><td>Select</td><td>Sí</td></tr>
+    <tr><td>Número</td><td>Auto</td><td>Sí</td></tr>
+    <tr><td>Fecha</td><td>Date</td><td>Sí</td></tr>
+    <tr><td>Remitente</td><td>Select</td><td>Sí</td></tr>
+    <tr><td>Destinatario</td><td>Select</td><td>Sí</td></tr>
+    <tr><td>Código Cite</td><td>Text</td><td>No</td></tr>
+    <tr><td>Materia</td><td>Text</td><td>Sí</td></tr>
+    <tr><td>Fecha Vencimiento</td><td>Date</td><td>No</td></tr>
+    <tr><td>Adjuntos</td><td>File</td><td>No</td></tr>
+    <tr><td>Observaciones</td><td>Textarea</td><td>No</td></tr>
+</table>
+
+<h3>3.2 Tipos de Documento</h3>
+<table>
+    <tr><th>Código</th><th>Nombre</th><th>Categoría</th><th>Requiere Firma</th></tr>
+    <tr><td>REC</td><td>Recibido</td><td>LLEGAN</td><td>No</td></tr>
+    <tr><td>PAR</td><td>Partes</td><td>LLEGAN</td><td>No</td></tr>
+    <tr><td>MEM</td><td>Memo</td><td>CIRCULAN</td><td>No</td></tr>
+    <tr><td>DES</td><td>Despacho</td><td>CIRCULAN</td><td>Sí</td></tr>
+    <tr><td>CIR</td><td>Circular</td><td>CIRCULAN</td><td>No</td></tr>
+    <tr><td>INF</td><td>Informe</td><td>CIRCULAN</td><td>Sí</td></tr>
+    <tr><td>OFI</td><td>Oficio</td><td>SALEN</td><td>Sí</td></tr>
+    <tr><td>RES</td><td>Resolución</td><td>SALEN</td><td>Sí</td></tr>
+    <tr><td>ORD</td><td>Ordinario</td><td>SALEN</td><td>Sí</td></tr>
+    <tr><td>CAR</td><td>Carta</td><td>SALEN</td><td>Sí</td></tr>
+</table>
+
+<hr>
+
+<h2>4. EXPEDIENTES</h2>
+<p><strong>Demo:</strong> <code>10-expedientes.html</code></p>
+<ul>
+    <li>Crear expediente con nombre y descripción</li>
+    <li>Agrupar documentos por proyecto/hito</li>
+    <li>Tree view de documentos</li>
+    <li>Compartir con otros usuarios</li>
+    <li>8 tabs: Resumen, Documentos, Tareas, Derivaciones, Bitácora, Historial, Archivadores, Adjuntos</li>
+</ul>
+<p><strong>Estados:</strong> Pendiente, Proceso, Cerrado</p>
+
+<hr>
+
+<h2>5. TAREAS</h2>
+<p><strong>Demo:</strong> <code>14-consulta-tareas.html</code></p>
+<ul>
+    <li>Asignar tareas a usuarios</li>
+    <li>Nivel responsable (quien asigna)</li>
+    <li>Usuario ejecutor (quien realiza)</li>
+    <li>Glosa (descripción)</li>
+    <li>Fecha vencimiento</li>
+    <li>Adjuntar documentos de respuesta</li>
+</ul>
+<p><strong>Estados:</strong> Pendiente, Cumplida, Semicumplida</p>
+
+<hr>
+
+<h2>6. ARCHIVADORES</h2>
+<p><strong>Demo:</strong> <code>15-archivadores.html</code></p>
+<ul>
+    <li>Organización por Año</li>
+    <li>Organización por Mes</li>
+    <li>Identificación por Caja</li>
+    <li>Descripción del contenido</li>
+</ul>
+<p><strong>Estados:</strong> Archivrado, En préstamo</p>
+
+<hr>
+
+<h2>7. REPORTES</h2>
+<p><strong>Demo:</strong> <code>16-reportes.html</code></p>
+<ul>
+    <li>Por correlativos</li>
+    <li>Por rango de fechas</li>
+    <li>Despacho interno por dept.</li>
+    <li>Diario/mensual por dept.</li>
+    <li>Docs no recibidos</li>
+</ul>
+
+<hr>
+
+<h2>8. AUTENTICACIÓN</h2>
+<p><strong>Demo:</strong> <code>06-login-cargo.html</code></p>
+<table>
+    <tr><th>Método</th><th>Descripción</th></tr>
+    <tr><td>Local</td><td>Usuario/password tradicional</td></tr>
+    <tr><td>ClaveUnica</td><td>OIDC del Gobierno</td></tr>
+    <tr><td>MFA</td><td>Segundo factor</td></tr>
+    <tr><td>SSO</td><td>Single Sign-On</td></tr>
+</table>
+
+<hr>
+
+<h2>9. INTEGRACIONES GUBERNAMENTALES</h2>
+<ul>
+    <li><strong>ClaveUnica:</strong> OIDC, accounts.claveunica.gob.cl</li>
+    <li><strong>FirmaGob:</strong> Firma electrónica avanzada</li>
+    <li><strong>DocDigital:</strong> Bandeja electrónica gobierno</li>
+    <li><strong>DTE/SII:</strong> Facturas electrónicas</li>
+    <li><strong>OIRS:</strong> Transparencia (DECRETO 968)</li>
+    <li><strong>Email:</strong> IMAP/POP3, reglas clasificación</li>
+</ul>
+
+<hr>
+
+<h2>10. MÓDULOS DE ADMINISTRACIÓN</h2>
+<p><strong>Demo:</strong> <code>21-administracion.html</code></p>
+<ul>
+    <li>Gestión de usuarios</li>
+    <li>CRUD de documentos</li>
+    <li>Configuración del sistema</li>
+    <li>Gestión de roles y permisos</li>
+</ul>
+
+<hr>
+
+<h2>11. DASHBOARD</h2>
+<table>
+    <tr><th>Demo</th><th>Descripción</th></tr>
+    <tr><td>07-dashboard.html</td><td>Dashboard básico</td></tr>
+    <tr><td>11-dashboard-kpis.html</td><td>Dashboard con KPIs</td></tr>
+    <tr><td>12-dashboard-premium.html</td><td>Dashboard premium</td></tr>
+</table>
+
+<hr>
+
+<h2>12. FLUJOS ESPECIALIZADOS</h2>
+<ol>
+    <li>Decreto Sección 1 y 2 Pagos</li>
+    <li>Decreto Subsidios</li>
+    <li>Pago Facturas</li>
+    <li>Decretos Personal</li>
+    <li>Visación Bases Licitación</li>
+    <li>Transparencia Activa</li>
+    <li>Transparencia Pasiva/SAI</li>
+    <li>Tramitación Libre</li>
+    <li>Oficios DocDigital</li>
+</ol>
+
+<hr>
+
+<p style="text-align: center; color: #6b7280;"><em>Documento generado el 9 de Abril de 2026</em></p>
+
+</body>
+</html>
