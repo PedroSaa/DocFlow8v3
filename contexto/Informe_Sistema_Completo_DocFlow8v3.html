@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Sistema DocFlow 8 Infinity</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            color: #1a56db;
+            border-bottom: 3px solid #1a56db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #1e40af;
+            border-left: 4px solid #1a56db;
+            padding-left: 15px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #1d4ed8;
+            margin-top: 25px;
+        }
+        h4 {
+            color: #2563eb;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #1a56db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        .nota {
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .aviso {
+            background-color: #fee2e2;
+            border-left: 4px solid #dc2626;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        code {
+            background-color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+        }
+        .info-box {
+            background-color: #dbeafe;
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #e5e7eb;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+
+<h1>INFORME DETALLADO DEL SISTEMA DOCFLOW 8 INFINITY</h1>
+
+<p><strong>Versión:</strong> 1.0<br>
+<strong>Fecha:</strong> 9 de Abril 2026<br>
+<strong>Proyecto:</strong> DocFlow 8 Infinity - Sistema de Gestión Documental</p>
+
+<hr>
+
+<h2>1. RESUMEN EJECUTIVO</h2>
+
+<p>DocFlow 8 Infinity es un sistema de gestión documental para el sector público chileno, diseñado para digitalizar y automatizar los flujos de documentos heredados del sistema legacy (DocFlow 6). El sistema soporta los 3 flujos principales de documentos: <strong>LLEGAN</strong> (exterior → interior), <strong>CIRCULAN</strong> (interno → interno), y <strong>SALEN</strong> (interior → exterior).</p>
+
+<hr>
+
+<h2>2. ARQUITECTURA GENERAL</h2>
+
+<h3>2.1 Stack Tecnológico</h3>
+
+<table>
+    <tr>
+        <th>Capa</th>
+        <th>Tecnología</th>
+    </tr>
+    <tr>
+        <td><strong>Frontend</strong></td>
+        <td>Angular 17+ (SPA)</td>
+    </tr>
+    <tr>
+        <td><strong>Backend</strong></td>
+        <td>.NET 8 / ASP.NET Core</td>
+    </tr>
+    <tr>
+        <td><strong>Base de Datos</strong></td>
+        <td>SQL Server / PostgreSQL</td>
+    </tr>
+    <tr>
+        <td><strong>Auth</strong></td>
+        <td>JWT + Identity + MFA</td>
+    </tr>
+    <tr>
+        <td><strong>Archivo</strong></td>
+        <td>Blob Storage (Azure/AWS)</td>
+    </tr>
+</table>
+
+<h3>2.2 Estructura de Proyecto</h3>
+
+<pre><code>DocFlow8v3/
+├── src/
+│   ├── DocFlow.Core/          # Entidades, interfaces, enums
+│   ├── DocFlow.Application/    # Use cases, DTOs, Services
+│   ├── DocFlow.Infrastructure/ # EF Core, repositories
+│   └── DocFlow.Api/           # Controllers, middleware
+└── contexto/
+    ├── demos/                 # 21 demos HTML
+    ├── Especificaciones_Tecnicas.md
+    └── presentaciones/       # Presentaciones comerciales
+</code></pre>
+
+<hr>
+
+<h2>3. MÓDULOS DEL SISTEMA</h2>
+
+<h3>3.1 Bandeja de Entrada</h3>
+
+<p><strong>Demos:</strong> <code>demos/08-bandeja.html</code>, <code>demos/20-bandeja-completa.html</code></p>
+
+<p><strong>Funcionalidades:</strong></p>
+<ul>
+    <li>Documentos pendientes por recibir/derivar</li>
+    <li>Filtros por fecha, tipo, número, materia, correlativo</li>
+    <li>Acciones: Recibir, Derivar, Reenviar, Devolver, Archivar, Anular, Destacar</li>
+    <li>Indicadores visuales: T (timbre), I (imagen), A (adjuntos), R (referencias), O (observaciones)</li>
+    <li>Sub-bandejas:
+        <ul>
+            <li>DocDigital del Gob. (documentos del gobierno)</li>
+            <li>Email (documentos recibidos por email)</li>
+            <li>Facturas (DTE del SII)</li>
+            <li>Órdenes de Compra</li>
+        </ul>
+    </li>
+</ul>
+
+<p><strong>Estados de documento:</strong> Pendiente, Recibido, En proceso, Firmado, Archivrado</p>
+
+<h3>3.2 Registro de Documentos</h3>
+
+<p><strong>Demos:</strong></p>
+<ul>
+    <li><code>17-registrar-documento-recibido.html</code> (LLEGAN)</li>
+    <li><code>18-crear-documento-interno.html</code> (CIRCULAN)</li>
+    <li><code>19-crear-documento-externo.html</code> (SALEN)</li>
+</ul>
+
+<h4>3.2.1 Tipos de Documentos por Flujo</h4>
+
+<table>
+    <tr>
+        <th>Código</th>
+        <th>Tipo</th>
+        <th>Flujo</th>
+        <th>Requiere Firma</th>
+    </tr>
+    <tr>
+        <td>REC</td>
+        <td>Recibido</td>
+        <td>LLEGAN</td>
+        <td>❌</td>
+    </tr>
+    <tr>
+        <td>PAR</td>
+        <td>Partes</td>
+        <td>LLEGAN</td>
+        <td>❌</td>
+    </tr>
+    <tr>
+        <td>MEM</td>
+        <td>Memo</td>
+        <td>CIRCULAN</td>
+        <td>❌</td>
+    </tr>
+    <tr>
+        <td>DES</td>
+        <td>Despacho</td>
+        <td>CIRCULAN</td>
+        <td>✅</td>
+    </tr>
+    <tr>
+        <td>CIR</td>
+        <td>Circular</td>
+        <td>CIRCULAN</td>
+        <td>❌</td>
+    </tr>
+    <tr>
+        <td>INF</td>
+        <td>Informe</td>
+        <td>CIRCULAN</td>
+        <td>✅</td>
+    </tr>
+    <tr>
+        <td>OFI</td>
+        <td>Oficio</td>
+        <td>SALEN</td>
+        <td>✅</td>
+    </tr>
+    <tr>
+        <td>RES</td>
+        <td>Resolución</td>
+        <td>SALEN</td>
+        <td>✅</td>
+    </tr>
+    <tr>
+        <td>ORD</td>
+        <td>Ordinario</td>
+        <td>SALEN</td>
+        <td>✅</td>
+    </tr>
+    <tr>
+        <td>CAR</td>
+        <td>Carta</td>
+        <td>SALEN</td>
+        <td>✅</td>
+    </tr>
+</table>
+
+<h4>3.2.2 Campos del Formulario</h4>
+
+<ul>
+    <li>Tipo de Documento</li>
+    <li>Número Documento (auto-generado)</li>
+    <li>Fecha Documento</li>
+    <li>Remitente (Autor)</li>
+    <li>Destinatario</li>
+    <li>Código Cite</li>
+    <li>Fecha Cite</li>
+    <li>Materia</li>
+    <li>Fecha Vencimiento (opcional)</li>
+    <li>Adjuntos</li>
+    <li>Observaciones</li>
+</ul>
+
+<h3>3.3 Expedientes</h3>
+
+<p><strong>Demo:</strong> <code>demos/10-expedientes.html</code></p>
+
+<p><strong>Funcionalidades:</strong></p>
+<ul>
+    <li>Agrupar documentos por proyecto/hito</li>
+    <li>Tree view de documentos</li>
+    <li>8 tabs: Resumen, Documentos, Tareas, Derivaciones, Bitácora, Historial, Archivadores, Adjuntos</li>
+    <li>Compartir expediente con otros usuarios</li>
+    <li>Estados: Pendiente, Proceso, Cerrado</li>
+</ul>
+
+<h3>3.4 Tareas</h3>
+
+<p><strong>Demo:</strong> <code>demos/14-consulta-tareas.html</code></p>
+
+<p><strong>Funcionalidades:</strong></p>
+<ul>
+    <li>Asignar tareas a usuarios</li>
+    <li>Nivel responsable (quien asigna)</li>
+    <li>Usuario ejecutor (quien realiza)</li>
+    <li>Glosa (descripción)</li>
+    <li>Fecha vencimiento</li>
+    <li>Responder con documento</li>
+    <li>Estados: Pendiente, Cumplida, Semicumplida</li>
+</ul>
+
+<h3>3.5 Archivadores</h3>
+
+<p><strong>Demo:</strong> <code>demos/15-archivadores.html</code></p>
+
+<p><strong>Funcionalidades:</strong></p>
+<ul>
+    <li>Gestión física de documentos</li>
+    <li>Organización por: Año, Mes, Caja</li>
+    <li>Descripción del contenido</li>
+    <li>Estado: Archivrado, En préstamo</li>
+</ul>
+
+<h3>3.6 Reportes</h3>
+
+<p><strong>Demo:</strong> <code>demos/16-reportes.html</code></p>
+
+<p><strong>Tipos de Reportes:</strong></p>
+<ul>
+    <li>Por correlativos</li>
+    <li>Por rango de fechas, tipo y correlativos</li>
+    <li>Despacho interno por departamento</li>
+    <li>Reporte diario/mensual por departamento y formato</li>
+    <li>Documentos no recibidos</li>
+</ul>
+
+<hr>
+
+<h2>4. FLUJO COMPLETO DE DOCUMENTO DE SALIDA</h2>
+
+<p>El sistema soporta el flujo completo heredado del legacy (6 pasos):</p>
+
+<div class="info-box">
+<strong>1. CREAR</strong> → <strong>2. DERIVAR</strong> → <strong>3. RECIBIR</strong> → <strong>4. FIRMAR</strong> → <strong>5. OFICINA DE PARTES</strong> → <strong>6. DESPACHO</strong>
+</div>
+
+<p><strong>Descripción de cada paso:</strong></p>
+<ol>
+    <li><strong>Crear:</strong> Redactar documento en editor</li>
+    <li><strong>Derivar:</strong> Enviar a trámite interno (revisión/aprobación)</li>
+    <li><strong>Recibir:</strong> Aceptar en bandeja del receptor</li>
+    <li><strong>Firmar:</strong> Firma electrónica → PDF certificado</li>
+    <li><strong>Oficina de Partes:</strong> Único punto autorizado para despacho exterior</li>
+    <li><strong>Despacho:</strong> Envío físico o electrónico al destinatario</li>
+</ol>
+
+<hr>
+
+<h2>5. FLUJOS ESPECIALIZADOS (CONFIGURABLES)</h2>
+
+<p>El sistema soporta 9 flujos especializados configurables:</p>
+
+<table>
+    <tr>
+        <th>#</th>
+        <th>Flujo</th>
+        <th>Descripción</th>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>Decreto Sección 1 y 2 Pagos</td>
+        <td>Decretos de pago</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>Decreto Subsidios</td>
+        <td>Decretos de subsidios</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>Pago Facturas</td>
+        <td>Workflow de aprobación de facturas</td>
+    </tr>
+    <tr>
+        <td>4</td>
+        <td>Decretos Personal</td>
+        <td>Decretos de personal</td>
+    </tr>
+    <tr>
+        <td>5</td>
+        <td>Visación Bases Licitación</td>
+        <td>Revisión de bases</td>
+    </tr>
+    <tr>
+        <td>6</td>
+        <td>Transparencia Activa</td>
+        <td>Publicación proactiva</td>
+    </tr>
+    <tr>
+        <td>7</td>
+        <td>Transparencia Pasiva/SAI</td>
+        <td>Respuesta a solicitudes</td>
+    </tr>
+    <tr>
+        <td>8</td>
+        <td>Tramitación Libre</td>
+        <td>Trámites no categorizados</td>
+    </tr>
+    <tr>
+        <td>9</td>
+        <td>Oficios DocDigital</td>
+        <td>Desde bandeja DocDigital</td>
+    </tr>
+</table>
+
+<hr>
+
+<h2>6. INTEGRACIONES GUBERNAMENTALES</h2>
+
+<h3>6.1 ClaveUnica (OIDC)</h3>
+<ul>
+    <li><strong>Protocolo:</strong> OpenID Connect</li>
+    <li><strong>Endpoint:</strong> <code>https://accounts.claveunica.gob.cl</code></li>
+    <li><strong>Scopes:</strong> <code>openid run run identifiers</code></li>
+    <li><strong>Estado:</strong> ✅ Implementado en demo login</li>
+</ul>
+
+<h3>6.2 FirmaGob</h3>
+
+<p><strong>Roles:</strong></p>
+<ul>
+    <li>Operador (administrador)</li>
+    <li>Ministro de Fe (validador)</li>
+    <li>Funcionario/Autoridad (firmante)</li>
+</ul>
+
+<p><strong>Tipos de Certificados:</strong></p>
+<ul>
+    <li>Propósito General (QR)</li>
+    <li>Propósito Desatendido (API)</li>
+    <li>Autocertificación</li>
+</ul>
+
+<p><strong>API Endpoints:</strong></p>
+<ul>
+    <li><code>POST /api/v1/signatures/sign</code></li>
+    <li><code>POST /api/v1/signatures/batch</code></li>
+    <li><code>GET /api/v1/certificates/status</code></li>
+    <li><code>POST /api/v1/certificates/revoke</code></li>
+</ul>
+
+<h3>6.3 DocDigital del Gobierno</h3>
+
+<p><strong>Funciones v3:</strong></p>
+<ol>
+    <li>Firma y distribución de documentos</li>
+    <li>Comunicaciones internas</li>
+    <li>Comunicaciones oficiales</li>
+</ol>
+
+<p><strong>API:</strong> <code>https://api.doc.digital.gob.cl</code></p>
+
+<h3>6.4 DTE - Facturas Electrónicas (SII)</h3>
+<ul>
+    <li>Recepción automática de facturas</li>
+    <li>Validación de timbre</li>
+    <li>Workflow de aprobación</li>
+</ul>
+
+<h3>6.5 OIRS / Transparencia</h3>
+<ul>
+    <li>DECRETO 968</li>
+    <li>Plazo: 20 días hábiles</li>
+    <li>Portal ciudadano</li>
+</ul>
+
+<h3>6.6 Módulo de Email (IMAP)</h3>
+
+<p><strong>Protocolos:</strong></p>
+<ul>
+    <li>IMAP (993) - lectura</li>
+    <li>POP3 (995) - descarga</li>
+    <li>SMTP (587) - notificaciones</li>
+</ul>
+
+<p><strong>Funcionalidades:</strong></p>
+<ul>
+    <li>Polling automático (configurable)</li>
+    <li>Reglas de clasificación (remitente, asunto, adjunto)</li>
+    <li>Conversión a documento DocFlow</li>
+</ul>
+
+<hr>
+
+<h2>7. AUTENTICACIÓN</h2>
+
+<h3>7.1 Métodos Soportados</h3>
+
+<table>
+    <tr>
+        <th>Método</th>
+        <th>Descripción</th>
+        <th>Estado</th>
+    </tr>
+    <tr>
+        <td><strong>Local</strong></td>
+        <td>Usuario/password</td>
+        <td>✅</td>
+    </tr>
+    <tr>
+        <td><strong>ClaveUnica</strong></td>
+        <td>OIDC gobierno</td>
+        <td>✅</td>
+    </tr>
+    <tr>
+        <td><strong>MFA</strong></td>
+        <td>Segundo factor</td>
+        <td>✅</td>
+    </tr>
+    <tr>
+        <td><strong>SSO</strong></td>
+        <td>Single Sign-On</td>
+        <td>✅</td>
+    </tr>
+</table>
+
+<h3>7.2 Roles y Permisos</h3>
+
+<ul>
+    <li>Administrador</li>
+    <li>Usuario</li>
+    <li>Operador</li>
+    <li>Ministro de Fe</li>
+    <li>Receptor</li>
+    <li>Firmante</li>
+</ul>
+
+<hr>
+
+<h2>8. LISTA COMPLETA DE DEMOS</h2>
+
+<table>
+    <tr>
+        <th>#</th>
+        <th>Archivo</th>
+        <th>Descripción</th>
+    </tr>
+    <tr>
+        <td>01</td>
+        <td><code>01-corporate-clean.html</code></td>
+        <td>UI Corporate Clean</td>
+    </tr>
+    <tr>
+        <td>02</td>
+        <td><code>02-modern-saas.html</code></td>
+        <td>UI Modern SaaS</td>
+    </tr>
+    <tr>
+        <td>03</td>
+        <td><code>03-government-formal.html</code></td>
+        <td>UI Government Formal</td>
+    </tr>
+    <tr>
+        <td>04</td>
+        <td><code>04-material-design.html</code></td>
+        <td>UI Material Design</td>
+    </tr>
+    <tr>
+        <td>05</td>
+        <td><code>05-corporate-theming.html</code></td>
+        <td>Theming dinámico</td>
+    </tr>
+    <tr>
+        <td>06</td>
+        <td><code>06-login-cargo.html</code></td>
+        <td>Login con 4 auth methods</td>
+    </tr>
+    <tr>
+        <td>07</td>
+        <td><code>07-dashboard.html</code></td>
+        <td>Dashboard básico</td>
+    </tr>
+    <tr>
+        <td>08</td>
+        <td><code>08-bandeja.html</code></td>
+        <td>Bandeja de entrada</td>
+    </tr>
+    <tr>
+        <td>09</td>
+        <td><code>09-documento.html</code></td>
+        <td>Ver/editar documento (9 tabs)</td>
+    </tr>
+    <tr>
+        <td>10</td>
+        <td><code>10-expedientes.html</code></td>
+        <td>Expedientes</td>
+    </tr>
+    <tr>
+        <td>11</td>
+        <td><code>11-dashboard-kpis.html</code></td>
+        <td>Dashboard con KPIs</td>
+    </tr>
+    <tr>
+        <td>12</td>
+        <td><code>12-dashboard-premium.html</code></td>
+        <td>Dashboard premium</td>
+    </tr>
+    <tr>
+        <td>13</td>
+        <td><code>13-consulta-documentos.html</code></td>
+        <td>Búsqueda documentos</td>
+    </tr>
+    <tr>
+        <td>14</td>
+        <td><code>14-consulta-tareas.html</code></td>
+        <td>Consulta tareas</td>
+    </tr>
+    <tr>
+        <td>15</td>
+        <td><code>15-archivadores.html</code></td>
+        <td>Archivadores</td>
+    </tr>
+    <tr>
+        <td>16</td>
+        <td><code>16-reportes.html</code></td>
+        <td>Reportes</td>
+    </tr>
+    <tr>
+        <td>17</td>
+        <td><code>17-registrar-documento-recibido.html</code></td>
+        <td>Registrar (LLEGAN)</td>
+    </tr>
+    <tr>
+        <td>18</td>
+        <td><code>18-crear-documento-interno.html</code></td>
+        <td>Crear (CIRCULAN)</td>
+    </tr>
+    <tr>
+        <td>19</td>
+        <td><code>19-crear-documento-externo.html</code></td>
+        <td>Crear (SALEN)</td>
+    </tr>
+    <tr>
+        <td>20</td>
+        <td><code>20-bandeja-completa.html</code></td>
+        <td>Bandeja + sub-bandejas</td>
+    </tr>
+    <tr>
+        <td>21</td>
+        <td><code>21-administracion.html</code></td>
+        <td>Administración del sistema</td>
+    </tr>
+</table>
+
+<hr>
+
+<h2>9. DOCUMENTACIÓN EXISTENTE</h2>
+
+<h3>9.1 Informes</h3>
+
+<table>
+    <tr>
+        <th>Documento</th>
+        <th>Descripción</th>
+    </tr>
+    <tr>
+        <td><code>Especificaciones_Tecnicas.md</code></td>
+        <td>Especificaciones técnicas completas</td>
+    </tr>
+    <tr>
+        <td><code>Informe_Ejecutivo_DocFlow_v3.md</code></td>
+        <td>Resumen ejecutivo</td>
+    </tr>
+    <tr>
+        <td><code>Informe_Detallado_Sistema.md</code></td>
+        <td>Análisis detallado</td>
+    </tr>
+    <tr>
+        <td><code>Informe_Consolidado_DocFlow_v3.md</code></td>
+        <td>Consolidado completo</td>
+    </tr>
+    <tr>
+        <td><code>Plan_Trabajo_DocFlow_v3.md</code></td>
+        <td>Plan de trabajo</td>
+    </tr>
+    <tr>
+        <td><code>Plan_Desarrollo_Premium_DocFlow8v2.md</code></td>
+        <td>Plan de desarrollo premium</td>
+    </tr>
+</table>
+
+<h3>9.2 Análisis</h3>
+
+<table>
+    <tr>
+        <th>Documento</th>
+        <th>Descripción</th>
+    </tr>
+    <tr>
+        <td><code>Analisis_Licitaciones_Municipal.md</code></td>
+        <td>Análisis para licitaciones</td>
+    </tr>
+    <tr>
+        <td><code>Analisis_Reutilizacion_Backend_v2.md</code></td>
+        <td>Reutilización de código</td>
+    </tr>
+    <tr>
+        <td><code>Analisis_Screenshots_Legacy.md</code></td>
+        <td>Análisis del sistema legacy</td>
+    </tr>
+</table>
+
+<h3>9.3 Diseño</h3>
+
+<table>
+    <tr>
+        <th>Documento</th>
+        <th>Descripción</th>
+    </tr>
+    <tr>
+        <td><code>Design_System.md</code></td>
+        <td>Sistema de diseño UI</td>
+    </tr>
+    <tr>
+        <td><code>Decisiones_UI.md</code></td>
+        <td>Decisiones de interfaz</td>
+    </tr>
+    <tr>
+        <td><code>Accesibilidad.md</code></td>
+        <td>Estándares WCAG</td>
+    </tr>
+</table>
+
+<h3>9.4 Auditoría</h3>
+
+<table>
+    <tr>
+        <th>Documento</th>
+        <th>Descripción</th>
+    </tr>
+    <tr>
+        <td><code>Auditoria_DocFlow8v2.md</code></td>
+        <td>Control de cambios y auditoría</td>
+    </tr>
+</table>
+
+<hr>
+
+<h2>10. FUNCIONALIDADES PENDIENTES O POR MEJORAR</h2>
+
+<h3>10.1 Pendientes de Implementación</h3>
+
+<ul>
+    <li>[ ] Motor de workflows visual (BPMN-like)</li>
+    <li>[ ] Designer visual para workflows</li>
+    <li>[ ] Portal Ciudadano (SPA externo completo)</li>
+    <li>[ ] App móvil React Native</li>
+    <li>[ ] Integración completa API DocDigital</li>
+    <li>[ ] Integración completa API FirmaGob</li>
+</ul>
+
+<h3>10.2 Mejoras Sugeridas</h3>
+
+<ol>
+    <li><strong>Editor de documentos:</strong> Mejorar el editor WYSIWYG</li>
+    <li><strong>Firma digital:</strong> Agregar más opciones de certificados</li>
+    <li><strong>Reportes:</strong> Agregar más tipos de reportes</li>
+    <li><strong>Búsqueda:</strong> Mejorar búsqueda con FTS</li>
+    <li><strong>Notificaciones:</strong> Agregar notifications push</li>
+</ol>
+
+<hr>
+
+<h2>11. TABLAS DE BASE DE DATOS (PROPUESTAS)</h2>
+
+<ul>
+    <li><strong>Documents</strong> - Documentos principales</li>
+    <li><strong>DocumentVersions</strong> - Versiones de documentos</li>
+    <li><strong>DocumentAttachments</strong> - Adjuntos</li>
+    <li><strong>DocumentReferences</strong> - Referencias</li>
+    <li><strong>Expedients</strong> - Expedientes</li>
+    <li><strong>ExpedientDocuments</strong> - Docs en expediente</li>
+    <li><strong>ExpedientHitos</strong> - Hitos del expediente</li>
+    <li><strong>Tasks</strong> - Tareas</li>
+    <li><strong>TaskComments</strong> - Comentarios de tareas</li>
+    <li><strong>Users</strong> - Usuarios</li>
+    <li><strong>Roles</strong> - Roles</li>
+    <li><strong>Tenants</strong> - Multi-tenant</li>
+    <li><strong>DocumentTypes</strong> - Tipos de documento</li>
+    <li><strong>Departments</strong> - Departamentos</li>
+    <li><strong>Archivadores</strong> - Archivadores físicos</li>
+    <li><strong>EmailAccounts</strong> - Cuentas email</li>
+    <li><strong>EmailRules</strong> - Reglas de clasificación</li>
+</ul>
+
+<hr>
+
+<h2>12. PRÓXIMOS PASOS</h2>
+
+<p>Para continuar el desarrollo, se recomienda:</p>
+
+<ol>
+    <li><strong>Revisar</strong> este informe y validar completitud</li>
+    <li><strong>Priorizar</strong> funcionalidades pendientes</li>
+    <li><strong>Asignar</strong> recursos para implementación</li>
+    <li><strong>Planificar</strong> sprints de desarrollo</li>
+    <li><strong>Definir</strong> timeline de entrega</li>
+</ol>
+
+<hr>
+
+<p style="text-align: center; color: #6b7280;">
+<em>Documento generado el 9 de Abril de 2026</em>
+</p>
+
+</body>
+</html>
